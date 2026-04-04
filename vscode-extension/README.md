@@ -8,6 +8,12 @@ Just a simple, reliable way to keep your dev stack running smoothly.
 
 ---
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/abhishekayu/portrm/main/vscode-extension/resources/ptrm.gif" alt="Portrm CLI Demo" width="800" height="800" />
+</p>
+
+---
+
 ## Features
 
 ### Sidebar Port Dashboard
