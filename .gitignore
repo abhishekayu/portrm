@@ -1,3 +1,4 @@
 /target
 .ptrm.pids
 .DS_Store
+*.vsix
