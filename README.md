@@ -4,9 +4,9 @@
 </p>
   <h1 align="center">Portrm</h1>
   <p align="center"><strong>Stop guessing what's running on your machine.</strong></p>
-  <p align="center">portrm is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked.
-
-Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments — all from your terminal, in milliseconds.
+  <p align="center">
+    portrm is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked.
+    Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments — all from your terminal, in milliseconds.
 
 Built for real-world development workflows where every second counts.</p>
   <p align="center">
