@@ -1,6 +1,6 @@
 {
   "name": "portrm",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.",
   "repository": {
     "type": "git",
