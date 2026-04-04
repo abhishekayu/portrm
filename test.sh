@@ -67,7 +67,7 @@ t_contains() {
     shift 2
     local out
     out=$("$@" 2>&1) || true
-    if echo "$out" | grep -qi "$pattern"; then
+    if grep -qi "$pattern" <<< "$out"; then
         ok "$name"
     else
         fail "$name" "output missing: '$pattern'"
@@ -81,7 +81,7 @@ t_ok_contains() {
     shift 2
     local out
     if out=$("$@" 2>&1); then
-        if echo "$out" | grep -qi "$pattern"; then
+        if grep -qi "$pattern" <<< "$out"; then
             ok "$name"
         else
             fail "$name" "output missing: '$pattern'"
