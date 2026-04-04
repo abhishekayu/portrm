@@ -22,10 +22,10 @@
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Other",
     "Debuggers",
-    "CLI",
-    "monitoring"
+    "Testing",
+    "Visualization",
+    "Other"
   ],
   "keywords": [
     "port",
@@ -42,7 +42,27 @@
     "debugging",
     "service-manager",
     "dev-environment",
-    "port-conflict"
+    "port-conflict",
+    "port",
+    "process",
+    "kill-port",
+    "port-manager",
+    "process-manager",
+    "port-scanner",
+    "developer-tools",
+    "devserver",
+    "localhost",
+    "network",
+    "debugging",
+    "docker",
+    "port-conflict",
+    "dev-environment",
+    "service-manager",
+    "cli",
+    "terminal",
+    "process-killer",
+    "port-inspector",
+    "dev-tools"
   ],
   "activationEvents": [
     "*"
