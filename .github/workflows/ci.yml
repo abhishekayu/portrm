@@ -58,13 +58,13 @@ jobs:
         run: npx @vscode/vsce package --allow-star-activation
       - name: Verify VSIX contents
         run: |
-          unzip -l ptrm-*.vsix
-          unzip -l ptrm-*.vsix | grep -q "out/extension.js" || (echo "Missing extension.js" && exit 1)
-          unzip -l ptrm-*.vsix | grep -q "readme.md" || (echo "Missing README" && exit 1)
-          unzip -l ptrm-*.vsix | grep -q "ptrm-icon.svg" || (echo "Missing SVG icon" && exit 1)
-          unzip -l ptrm-*.vsix | grep -q "ptrm-icon-128.png" || (echo "Missing PNG icon" && exit 1)
+          unzip -l portrm-cli-*.vsix
+          unzip -l portrm-cli-*.vsix | grep -q "out/extension.js" || (echo "Missing extension.js" && exit 1)
+          unzip -l portrm-cli-*.vsix | grep -q "readme.md" || (echo "Missing README" && exit 1)
+          unzip -l portrm-cli-*.vsix | grep -q "ptrm-icon.svg" || (echo "Missing SVG icon" && exit 1)
+          unzip -l portrm-cli-*.vsix | grep -q "ptrm-icon-128.png" || (echo "Missing PNG icon" && exit 1)
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ptrm-vsix
-          path: vscode-extension/ptrm-*.vsix
+          name: portrm-cli-vsix
+          path: vscode-extension/portrm-cli-*.vsix
