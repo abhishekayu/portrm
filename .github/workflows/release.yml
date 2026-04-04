@@ -223,7 +223,7 @@ jobs:
           cat > Formula/portrm.rb << 'FORMULA'
           class Portrm < Formula
             desc "portrm - Fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments"
-            homepage "https://github.com/abhishekayu/portrm"
+            homepage "https://portrm.dev"
             version "VERSION_PLACEHOLDER"
             license "MIT"
 
@@ -315,7 +315,7 @@ jobs:
           mkdir -p "${PKG}/usr/local/bin"
           cp "target/${{ matrix.target }}/release/ptrm" "${PKG}/usr/local/bin/ptrm"
           chmod 755 "${PKG}/usr/local/bin/ptrm"
-          printf 'Package: portrm\nVersion: %s\nSection: utils\nPriority: optional\nArchitecture: %s\nMaintainer: abhishekayu <github@abhishekayu>\nHomepage: https://github.com/abhishekayu/portrm\nDescription: portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments\n Built for real-world development workflows.\n' "${VERSION}" "${ARCH}" > "${PKG}/DEBIAN/control"
+          printf 'Package: portrm\nVersion: %s\nSection: utils\nPriority: optional\nArchitecture: %s\nMaintainer: abhishekayu <github@abhishekayu>\nHomepage: https://portrm.dev\nDescription: portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments\n Built for real-world development workflows.\n' "${VERSION}" "${ARCH}" > "${PKG}/DEBIAN/control"
           dpkg-deb --build "${PKG}"
           sha256sum "${PKG}.deb" > "${PKG}.deb.sha256"
 
@@ -357,7 +357,7 @@ jobs:
           m = {
             'version': '${VERSION}',
             'description': 'portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments',
-            'homepage': 'https://github.com/abhishekayu/portrm',
+            'homepage': 'https://portrm.dev',
             'license': 'MIT',
             'architecture': {'64bit': {'url': '${BASE}/portrm-windows-amd64.zip', 'hash': '${SHA_WIN}'}},
             'bin': 'ptrm.exe',

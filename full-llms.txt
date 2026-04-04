@@ -2,6 +2,8 @@
 
 > Stop guessing what's running on your machine.
 
+https://portrm.dev
+
 portrm is a fast, cross-platform CLI tool written in Rust for port management, process debugging, and dev environment recovery. It replaces the manual lsof + kill -9 workflow with a single intelligent command.
 
 ## What portrm does

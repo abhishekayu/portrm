@@ -51,7 +51,7 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 // ── CLI Wrapper ────────────────────────────────────────────────────
-const OUTPUT_CHANNEL_NAME = "Ptrm";
+const OUTPUT_CHANNEL_NAME = "Portrm";
 let _outputChannel;
 function getOutputChannel() {
     if (!_outputChannel) {

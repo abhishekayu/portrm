@@ -54,7 +54,7 @@ async function cmdRestart(item, refreshFn) {
         return;
     }
     const out = (0, utils_1.getOutputChannel)();
-    out.appendLine(`[Ptrm] Restarting ${serviceName}...`);
+    out.appendLine(`[Portrm] Restarting ${serviceName}...`);
     try {
         const result = await (0, utils_1.runPtrm)(`restart ${serviceName}`);
         out.appendLine(result);
@@ -80,7 +80,7 @@ async function cmdLogs(item) {
         }
         port = parseInt(input, 10);
         if (isNaN(port)) {
-            vscode.window.showErrorMessage("Ptrm: Invalid port number");
+            vscode.window.showErrorMessage("Portrm: Invalid port number");
             return;
         }
     }
@@ -100,7 +100,7 @@ async function cmdKill(item, refreshFn) {
         }
         port = parseInt(input, 10);
         if (isNaN(port)) {
-            vscode.window.showErrorMessage("Ptrm: Invalid port number");
+            vscode.window.showErrorMessage("Portrm: Invalid port number");
             return;
         }
     }
@@ -109,7 +109,7 @@ async function cmdKill(item, refreshFn) {
         return;
     }
     const out = (0, utils_1.getOutputChannel)();
-    out.appendLine(`[Ptrm] Killing process on port ${port}...`);
+    out.appendLine(`[Portrm] Killing process on port ${port}...`);
     try {
         const result = await (0, utils_1.runPtrm)(`kill ${port} -y`);
         out.appendLine(result);
@@ -125,22 +125,22 @@ async function cmdKill(item, refreshFn) {
 // ── Fix ────────────────────────────────────────────────────────────
 async function cmdFix(refreshFn) {
     const out = (0, utils_1.getOutputChannel)();
-    out.appendLine("[Ptrm] Running fix (auto-detect)...");
+    out.appendLine("[Portrm] Running fix (auto-detect)...");
     (0, utils_1.runInTerminal)("ptrm fix", "ptrm fix");
     setTimeout(() => refreshFn(), 3000);
 }
 // ── Up ─────────────────────────────────────────────────────────────
 async function cmdUp(refreshFn) {
     if (!(0, utils_1.hasConfig)()) {
-        vscode.window.showWarningMessage("Ptrm: No .ptrm.toml found. Run ptrm init first.");
+        vscode.window.showWarningMessage("Portrm: No .ptrm.toml found. Run ptrm init first.");
         return;
     }
     const out = (0, utils_1.getOutputChannel)();
-    out.appendLine("[Ptrm] Starting all services...");
+    out.appendLine("[Portrm] Starting all services...");
     try {
         const result = await (0, utils_1.runPtrm)("up -y");
         out.appendLine(result);
-        vscode.window.showInformationMessage("Ptrm: All services started");
+        vscode.window.showInformationMessage("Portrm: All services started");
     }
     catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -152,15 +152,15 @@ async function cmdUp(refreshFn) {
 // ── Down ───────────────────────────────────────────────────────────
 async function cmdDown(refreshFn) {
     if (!(0, utils_1.hasConfig)()) {
-        vscode.window.showWarningMessage("Ptrm: No .ptrm.toml found.");
+        vscode.window.showWarningMessage("Portrm: No .ptrm.toml found.");
         return;
     }
     const out = (0, utils_1.getOutputChannel)();
-    out.appendLine("[Ptrm] Stopping all services...");
+    out.appendLine("[Portrm] Stopping all services...");
     try {
         const result = await (0, utils_1.runPtrm)("down");
         out.appendLine(result);
-        vscode.window.showInformationMessage("Ptrm: All services stopped");
+        vscode.window.showInformationMessage("Portrm: All services stopped");
     }
     catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -173,19 +173,19 @@ async function cmdDown(refreshFn) {
 async function cmdInit(refreshFn) {
     const root = (0, utils_1.getWorkspaceRoot)();
     if (!root) {
-        vscode.window.showErrorMessage("Ptrm: No workspace folder open. Please open a folder first.");
+        vscode.window.showErrorMessage("Portrm: No workspace folder open. Please open a folder first.");
         return;
     }
     if ((0, utils_1.hasConfig)()) {
-        vscode.window.showInformationMessage("Ptrm: .ptrm.toml already exists in this workspace.");
+        vscode.window.showInformationMessage("Portrm: .ptrm.toml already exists in this workspace.");
         return;
     }
     const out = (0, utils_1.getOutputChannel)();
-    out.appendLine("[Ptrm] Initializing project...");
+    out.appendLine("[Portrm] Initializing project...");
     try {
         const result = await (0, utils_1.runPtrm)("init");
         out.appendLine(result);
-        vscode.window.showInformationMessage("Ptrm: Created .ptrm.toml");
+        vscode.window.showInformationMessage("Portrm: Created .ptrm.toml");
     }
     catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -207,7 +207,7 @@ async function cmdInfo(item) {
         }
         port = parseInt(input, 10);
         if (isNaN(port)) {
-            vscode.window.showErrorMessage("Ptrm: Invalid port number");
+            vscode.window.showErrorMessage("Portrm: Invalid port number");
             return;
         }
     }
@@ -231,7 +231,7 @@ async function cmdWatch(item) {
         }
         port = parseInt(input, 10);
         if (isNaN(port)) {
-            vscode.window.showErrorMessage("Ptrm: Invalid port number");
+            vscode.window.showErrorMessage("Portrm: Invalid port number");
             return;
         }
     }
@@ -240,7 +240,7 @@ async function cmdWatch(item) {
 // ── Preflight ──────────────────────────────────────────────────────
 async function cmdPreflight() {
     if (!(0, utils_1.hasConfig)()) {
-        vscode.window.showWarningMessage("Ptrm: No .ptrm.toml found. Run ptrm init first.");
+        vscode.window.showWarningMessage("Portrm: No .ptrm.toml found. Run ptrm init first.");
         return;
     }
     (0, utils_1.runInTerminal)("ptrm preflight", "ptrm preflight");
@@ -264,7 +264,7 @@ function cmdScanDev() {
 // ── Registry ───────────────────────────────────────────────────────
 async function cmdRegistry() {
     if (!(0, utils_1.hasConfig)()) {
-        vscode.window.showWarningMessage("Ptrm: No .ptrm.toml found.");
+        vscode.window.showWarningMessage("Portrm: No .ptrm.toml found.");
         return;
     }
     (0, utils_1.runInTerminal)("ptrm registry", "ptrm registry check");
@@ -276,7 +276,7 @@ function cmdCi() {
 // ── Use Profile ────────────────────────────────────────────────────
 async function cmdUseProfile(refreshFn) {
     if (!(0, utils_1.hasConfig)()) {
-        vscode.window.showWarningMessage("Ptrm: No .ptrm.toml found.");
+        vscode.window.showWarningMessage("Portrm: No .ptrm.toml found.");
         return;
     }
     const profile = await vscode.window.showInputBox({
@@ -293,7 +293,7 @@ async function cmdUseProfile(refreshFn) {
 // ── Reset Profile (switch back to default) ─────────────────────────
 async function cmdResetProfile(refreshFn) {
     if (!(0, utils_1.hasConfig)()) {
-        vscode.window.showWarningMessage("Ptrm: No .ptrm.toml found.");
+        vscode.window.showWarningMessage("Portrm: No .ptrm.toml found.");
         return;
     }
     (0, utils_1.runInTerminal)("ptrm use", "ptrm down && ptrm use default && ptrm up");

@@ -2,7 +2,7 @@
   "name": "portrm",
   "displayName": "Portrm",
   "description": "portrm — blazing fast port & process manager. Kill and list processes on ports from your terminal.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "abhishekayu",
   "license": "MIT",
   "icon": "resources/ptrm-icon-128.png",
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "https://github.com/abhishekayu/portrm"
   },
-  "homepage": "https://github.com/abhishekayu/portrm#readme",
+  "homepage": "https://portrm.dev",
   "bugs": {
     "url": "https://github.com/abhishekayu/portrm/issues"
   },

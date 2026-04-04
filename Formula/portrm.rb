@@ -1,6 +1,6 @@
 class Portrm < Formula
   desc "portrm - Fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments"
-  homepage "https://github.com/abhishekayu/portrm"
+  homepage "https://portrm.dev"
   version "1.0.0"
   license "MIT"
 

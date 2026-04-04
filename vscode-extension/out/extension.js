@@ -45,7 +45,7 @@ let refreshTimer;
 let statusBarItem;
 // ── Activation ─────────────────────────────────────────────────────
 function activate(context) {
-    console.log("[Ptrm] Extension activating...");
+    console.log("[Portrm] Extension activating...");
     const provider = new treeProvider_1.PtrmTreeProvider();
     // Register tree view
     const treeView = vscode.window.createTreeView("ptrmView", {
@@ -53,7 +53,7 @@ function activate(context) {
         showCollapseAll: true,
     });
     context.subscriptions.push(treeView);
-    console.log("[Ptrm] TreeView registered");
+    console.log("[Portrm] TreeView registered");
     // Set context for conditional menus
     vscode.commands.executeCommand("setContext", "ptrm.hasConfig", (0, utils_1.hasConfig)());
     // Shared refresh function
@@ -65,7 +65,7 @@ function activate(context) {
             vscode.commands.executeCommand("setContext", "ptrm.hasConfig", (0, utils_1.hasConfig)());
         }
         catch (e) {
-            console.error("[Ptrm] Refresh error:", e);
+            console.error("[Portrm] Refresh error:", e);
         }
     };
     // Register commands
@@ -73,7 +73,7 @@ function activate(context) {
     // Status bar
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
     statusBarItem.command = "ptrmView.focus";
-    statusBarItem.tooltip = "Ptrm - Click to open sidebar";
+    statusBarItem.tooltip = "Portrm - Click to open sidebar";
     context.subscriptions.push(statusBarItem);
     statusBarItem.show();
     // Initial load (fire-and-forget with error handling)

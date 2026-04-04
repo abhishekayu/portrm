@@ -10,7 +10,7 @@
   "binary_size": "~1.2MB",
   "runtime_dependencies": [],
   "repository": "https://github.com/abhishekayu/portrm",
-  "homepage": "https://github.com/abhishekayu/portrm",
+  "homepage": "https://portrm.dev",
   "packages": {
     "crates_io": "https://crates.io/crates/portrm",
     "npm": "https://www.npmjs.com/package/portrm",

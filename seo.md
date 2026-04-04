@@ -3,6 +3,7 @@
 ## Meta
 
 - **Name**: portrm
+- **Website**: https://portrm.dev
 - **Tagline**: Stop guessing what's running on your machine.
 - **Description**: portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.
 - **Short description**: portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.

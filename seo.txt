@@ -1,4 +1,5 @@
 portrm - Stop guessing what's running on your machine
+https://portrm.dev
 
 portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.
 Built in Rust. ~1.2MB binary. Zero runtime dependencies.
