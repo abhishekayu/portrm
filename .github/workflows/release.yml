@@ -1,0 +1,382 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get version from tag
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: portrm ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          body: |
+            ## Install
+
+            **macOS / Linux (quickest)**
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/abhishekayu/portrm/main/install.sh | sh
+            ```
+
+            **Homebrew**
+            ```bash
+            brew install abhishekayu/tap/portrm
+            ```
+
+            **Cargo**
+            ```bash
+            cargo install portrm
+            ```
+
+            **npm / npx**
+            ```bash
+            npx portrm
+            ```
+
+            **Manual download** -- see assets below.
+
+  build:
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            artifact: ptrm-darwin-amd64
+          - target: aarch64-apple-darwin
+            os: macos-14
+            artifact: ptrm-darwin-arm64
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            artifact: ptrm-linux-amd64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            artifact: ptrm-linux-arm64
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            artifact: ptrm-windows-amd64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (Linux aarch64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> "$GITHUB_ENV"
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar czf ../../../${{ matrix.artifact }}.tar.gz ptrm
+          cd ../../..
+          shasum -a 256 ${{ matrix.artifact }}.tar.gz > ${{ matrix.artifact }}.tar.gz.sha256
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "target/${{ matrix.target }}/release/ptrm.exe" -DestinationPath "${{ matrix.artifact }}.zip"
+          (Get-FileHash "${{ matrix.artifact }}.zip" -Algorithm SHA256).Hash.ToLower() + "  ${{ matrix.artifact }}.zip" | Out-File -Encoding ascii "${{ matrix.artifact }}.zip.sha256"
+
+      - name: Upload tarball (Unix)
+        if: runner.os != 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ matrix.artifact }}.tar.gz
+          asset_name: ${{ matrix.artifact }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload checksum (Unix)
+        if: runner.os != 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ matrix.artifact }}.tar.gz.sha256
+          asset_name: ${{ matrix.artifact }}.tar.gz.sha256
+          asset_content_type: text/plain
+
+      - name: Upload zip (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ matrix.artifact }}.zip
+          asset_name: ${{ matrix.artifact }}.zip
+          asset_content_type: application/zip
+
+      - name: Upload checksum (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ matrix.artifact }}.zip.sha256
+          asset_name: ${{ matrix.artifact }}.zip.sha256
+          asset_content_type: text/plain
+
+  # Publish to crates.io on successful release
+  publish-crate:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Publish to crates.io
+        run: cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        continue-on-error: true
+
+  # Publish to npm
+  publish-npm:
+    needs: [create-release, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+      - name: Update npm package version
+        run: |
+          VERSION=${{ needs.create-release.outputs.version }}
+          cd npm
+          npm version "${VERSION}" --no-git-tag-version --allow-same-version
+      - name: Publish to npm
+        run: |
+          cd npm
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        continue-on-error: true
+
+  # Sync Homebrew formula to abhishekayu/homebrew-tap
+  update-homebrew-tap:
+    needs: [create-release, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download release asset checksums
+        id: sha
+        run: |
+          VERSION=${{ needs.create-release.outputs.version }}
+          BASE="https://github.com/abhishekayu/portrm/releases/download/v${VERSION}"
+
+          SHA_ARM64=$(curl -sL "${BASE}/ptrm-darwin-arm64.tar.gz.sha256" | awk '{print $1}')
+          SHA_AMD64=$(curl -sL "${BASE}/ptrm-darwin-amd64.tar.gz.sha256" | awk '{print $1}')
+          SHA_LINUX=$(curl -sL "${BASE}/ptrm-linux-amd64.tar.gz.sha256" | awk '{print $1}')
+
+          echo "arm64=${SHA_ARM64}" >> "$GITHUB_OUTPUT"
+          echo "amd64=${SHA_AMD64}" >> "$GITHUB_OUTPUT"
+          echo "linux=${SHA_LINUX}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Homebrew formula
+        run: |
+          VERSION=${{ needs.create-release.outputs.version }}
+          SHA_ARM64=${{ steps.sha.outputs.arm64 }}
+          SHA_AMD64=${{ steps.sha.outputs.amd64 }}
+          SHA_LINUX=${{ steps.sha.outputs.linux }}
+
+          cat > Formula/portrm.rb << 'FORMULA'
+          class Portrm < Formula
+            desc "portrm - Fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments"
+            homepage "https://github.com/abhishekayu/portrm"
+            version "VERSION_PLACEHOLDER"
+            license "MIT"
+
+            on_macos do
+              if Hardware::CPU.arm?
+                url "https://github.com/abhishekayu/portrm/releases/download/vVERSION_PLACEHOLDER/ptrm-darwin-arm64.tar.gz"
+                sha256 "SHA_ARM64_PLACEHOLDER"
+              else
+                url "https://github.com/abhishekayu/portrm/releases/download/vVERSION_PLACEHOLDER/ptrm-darwin-amd64.tar.gz"
+                sha256 "SHA_AMD64_PLACEHOLDER"
+              end
+            end
+
+            on_linux do
+              url "https://github.com/abhishekayu/portrm/releases/download/vVERSION_PLACEHOLDER/ptrm-linux-amd64.tar.gz"
+              sha256 "SHA_LINUX_PLACEHOLDER"
+            end
+
+            def install
+              bin.install "ptrm"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/ptrm --version")
+            end
+          end
+          FORMULA
+
+          # Remove leading whitespace from heredoc
+          sed -i 's/^          //' Formula/portrm.rb
+          # Replace placeholders
+          sed -i "s/VERSION_PLACEHOLDER/${VERSION}/g" Formula/portrm.rb
+          sed -i "s/SHA_ARM64_PLACEHOLDER/${SHA_ARM64}/" Formula/portrm.rb
+          sed -i "s/SHA_AMD64_PLACEHOLDER/${SHA_AMD64}/" Formula/portrm.rb
+          sed -i "s/SHA_LINUX_PLACEHOLDER/${SHA_LINUX}/" Formula/portrm.rb
+
+      - name: Push to homebrew-tap repo
+        run: |
+          git clone https://x-access-token:${{ secrets.TAP_GITHUB_TOKEN }}@github.com/abhishekayu/homebrew-tap.git tap
+          mkdir -p tap/Formula
+          cp Formula/portrm.rb tap/Formula/portrm.rb
+          cp homebrew/README.md tap/README.md
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to push"
+          else
+            git commit -m "portrm ${{ needs.create-release.outputs.version }}"
+            git push
+          fi
+
+  build-deb:
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            arch: amd64
+          - target: aarch64-unknown-linux-gnu
+            arch: arm64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (aarch64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> "$GITHUB_ENV"
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build .deb package
+        run: |
+          VERSION=${{ needs.create-release.outputs.version }}
+          ARCH=${{ matrix.arch }}
+          PKG="ptrm_${VERSION}_${ARCH}"
+          mkdir -p "${PKG}/DEBIAN"
+          mkdir -p "${PKG}/usr/local/bin"
+          cp "target/${{ matrix.target }}/release/ptrm" "${PKG}/usr/local/bin/ptrm"
+          chmod 755 "${PKG}/usr/local/bin/ptrm"
+          printf 'Package: ptrm\nVersion: %s\nSection: utils\nPriority: optional\nArchitecture: %s\nMaintainer: abhishekayu <github@abhishekayu>\nHomepage: https://github.com/abhishekayu/portrm\nDescription: portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments\n Built for real-world development workflows.\n' "${VERSION}" "${ARCH}" > "${PKG}/DEBIAN/control"
+          dpkg-deb --build "${PKG}"
+          sha256sum "${PKG}.deb" > "${PKG}.deb.sha256"
+
+      - name: Upload .deb
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./ptrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb
+          asset_name: ptrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb
+          asset_content_type: application/vnd.debian.binary-package
+
+      - name: Upload .deb checksum
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./ptrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb.sha256
+          asset_name: ptrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb.sha256
+          asset_content_type: text/plain
+
+  update-scoop:
+    needs: [create-release, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate and push Scoop manifest
+        run: |
+          VERSION=${{ needs.create-release.outputs.version }}
+          BASE="https://github.com/abhishekayu/portrm/releases/download/v${VERSION}"
+          SHA_WIN=$(curl -sL "${BASE}/ptrm-windows-amd64.zip.sha256" | awk '{print $1}')
+
+          mkdir -p scoop
+          python3 -c "
+          import json
+          m = {
+            'version': '${VERSION}',
+            'description': 'portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments',
+            'homepage': 'https://github.com/abhishekayu/portrm',
+            'license': 'MIT',
+            'architecture': {'64bit': {'url': '${BASE}/ptrm-windows-amd64.zip', 'hash': '${SHA_WIN}'}},
+            'bin': 'ptrm.exe',
+            'checkver': {'github': 'https://github.com/abhishekayu/portrm'},
+            'autoupdate': {'architecture': {'64bit': {'url': 'https://github.com/abhishekayu/portrm/releases/download/v\$version/ptrm-windows-amd64.zip'}}}
+          }
+          print(json.dumps(m, indent=2))
+          " > scoop/portrm.json
+
+          git clone https://x-access-token:${{ secrets.TAP_GITHUB_TOKEN }}@github.com/abhishekayu/scoop-portrm.git bucket || true
+          if [ -d bucket ]; then
+            cp scoop/portrm.json bucket/portrm.json
+            cd bucket
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            if ! git diff --cached --quiet; then
+              git commit -m "portrm ${VERSION}"
+              git push
+            fi
+          fi
+        continue-on-error: true

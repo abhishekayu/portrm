@@ -1,0 +1,290 @@
+{
+  "name": "portrm",
+  "displayName": "Portrm",
+  "description": "portrm — blazing fast port & process manager. Kill and list processes on ports from your terminal.",
+  "version": "1.0.0",
+  "publisher": "abhishekayu",
+  "license": "MIT",
+  "icon": "resources/ptrm-icon-128.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abhishekayu/portrm"
+  },
+  "homepage": "https://github.com/abhishekayu/portrm#readme",
+  "bugs": {
+    "url": "https://github.com/abhishekayu/portrm/issues"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Debuggers",
+    "Linters"
+  ],
+  "keywords": [
+    "port",
+    "process",
+    "kill-port",
+    "developer-tools",
+    "devserver",
+    "port-manager",
+    "port-scanner",
+    "process-manager",
+    "docker",
+    "localhost",
+    "network",
+    "debugging",
+    "service-manager",
+    "dev-environment",
+    "port-conflict"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ptrm",
+          "title": "Portrm",
+          "icon": "resources/ptrm-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "ptrm": [
+        {
+          "id": "ptrmView",
+          "name": "Portrm"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "ptrm.refresh",
+        "title": "Refresh",
+        "category": "Portrm",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "ptrm.restart",
+        "title": "Restart Service",
+        "category": "Portrm",
+        "icon": "$(debug-restart)"
+      },
+      {
+        "command": "ptrm.logs",
+        "title": "View Logs",
+        "category": "Portrm",
+        "icon": "$(output)"
+      },
+      {
+        "command": "ptrm.kill",
+        "title": "Kill Process on Port",
+        "category": "Portrm",
+        "icon": "$(close)"
+      },
+      {
+        "command": "ptrm.fix",
+        "title": "Fix Port Conflicts",
+        "category": "Portrm",
+        "icon": "$(wrench)"
+      },
+      {
+        "command": "ptrm.up",
+        "title": "Start All Services",
+        "category": "Portrm",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "ptrm.down",
+        "title": "Stop All Services",
+        "category": "Portrm",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "ptrm.init",
+        "title": "Initialize Project",
+        "category": "Portrm",
+        "icon": "$(new-file)"
+      },
+      {
+        "command": "ptrm.info",
+        "title": "Inspect Port",
+        "category": "Portrm",
+        "icon": "$(info)"
+      },
+      {
+        "command": "ptrm.doctor",
+        "title": "Doctor",
+        "category": "Portrm",
+        "icon": "$(heart)"
+      },
+      {
+        "command": "ptrm.watch",
+        "title": "Watch Port",
+        "category": "Portrm",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "ptrm.preflight",
+        "title": "Preflight Check",
+        "category": "Portrm",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "ptrm.interactive",
+        "title": "Interactive TUI",
+        "category": "Portrm",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "ptrm.group",
+        "title": "Group by Role",
+        "category": "Portrm",
+        "icon": "$(group-by-ref-type)"
+      },
+      {
+        "command": "ptrm.history",
+        "title": "History",
+        "category": "Portrm",
+        "icon": "$(history)"
+      },
+      {
+        "command": "ptrm.scanDev",
+        "title": "Scan Dev Ports",
+        "category": "Portrm",
+        "icon": "$(search)"
+      },
+      {
+        "command": "ptrm.registry",
+        "title": "Registry Check",
+        "category": "Portrm",
+        "icon": "$(database)"
+      },
+      {
+        "command": "ptrm.ci",
+        "title": "CI Check",
+        "category": "Portrm",
+        "icon": "$(github-action)"
+      },
+      {
+        "command": "ptrm.useProfile",
+        "title": "Switch Profile",
+        "category": "Portrm",
+        "icon": "$(arrow-swap)"
+      },
+      {
+        "command": "ptrm.update",
+        "title": "Update CLI",
+        "category": "Portrm",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "ptrm.resetProfile",
+        "title": "Reset to Default Profile",
+        "category": "Portrm",
+        "icon": "$(home)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "ptrm.refresh",
+          "when": "view == ptrmView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "ptrm.up",
+          "when": "view == ptrmView && ptrm.hasConfig",
+          "group": "navigation@2"
+        },
+        {
+          "command": "ptrm.down",
+          "when": "view == ptrmView && ptrm.hasConfig",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "ptrm.restart",
+          "when": "viewItem == service",
+          "group": "inline"
+        },
+        {
+          "command": "ptrm.logs",
+          "when": "viewItem == service",
+          "group": "inline"
+        },
+        {
+          "command": "ptrm.restart",
+          "when": "viewItem == service",
+          "group": "ptrm@1"
+        },
+        {
+          "command": "ptrm.logs",
+          "when": "viewItem == service",
+          "group": "ptrm@2"
+        },
+        {
+          "command": "ptrm.kill",
+          "when": "viewItem == port",
+          "group": "inline"
+        },
+        {
+          "command": "ptrm.logs",
+          "when": "viewItem == port",
+          "group": "inline"
+        },
+        {
+          "command": "ptrm.info",
+          "when": "viewItem == port",
+          "group": "ptrm@1"
+        },
+        {
+          "command": "ptrm.kill",
+          "when": "viewItem == port",
+          "group": "ptrm@2"
+        },
+        {
+          "command": "ptrm.logs",
+          "when": "viewItem == port",
+          "group": "ptrm@3"
+        },
+        {
+          "command": "ptrm.watch",
+          "when": "viewItem == port",
+          "group": "ptrm@4"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Portrm",
+      "properties": {
+        "ptrm.binaryPath": {
+          "type": "string",
+          "default": "ptrm",
+          "description": "Path to the ptrm binary. Leave as 'ptrm' to auto-detect."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "npm run compile && npx @vscode/vsce package --allow-star-activation",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}

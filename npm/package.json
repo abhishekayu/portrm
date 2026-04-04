@@ -1,0 +1,50 @@
+{
+  "name": "portrm",
+  "version": "1.0.0",
+  "description": "portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abhishekayu/portrm"
+  },
+  "license": "MIT",
+  "keywords": [
+    "port",
+    "kill-port",
+    "port-conflict",
+    "developer-tools",
+    "cli",
+    "devserver",
+    "process",
+    "debug",
+    "eaddrinuse",
+    "zombie-process",
+    "port-scanner",
+    "dev-environment",
+    "productivity"
+  ],
+  "bin": {
+    "ptrm": "bin/ptrm.js",
+    "portrm": "bin/ptrm.js"
+  },
+  "files": [
+    "bin/",
+    "install.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "engines": {
+    "node": ">=16"
+  }
+}

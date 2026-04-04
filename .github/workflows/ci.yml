@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo check --all-targets
+      - run: cargo test --all-targets
+      - run: cargo clippy --all-targets -- -D warnings
+
+  build-matrix:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+
+  integration-test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - name: Run test suite
+        run: bash test.sh
+
+  vscode-extension:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vscode-extension
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Compile TypeScript
+        run: npx tsc --noEmit
+      - name: Package extension
+        run: npx @vscode/vsce package --allow-star-activation
+      - name: Verify VSIX contents
+        run: |
+          unzip -l ptrm-*.vsix
+          unzip -l ptrm-*.vsix | grep -q "out/extension.js" || (echo "Missing extension.js" && exit 1)
+          unzip -l ptrm-*.vsix | grep -q "readme.md" || (echo "Missing README" && exit 1)
+          unzip -l ptrm-*.vsix | grep -q "ptrm-icon.svg" || (echo "Missing SVG icon" && exit 1)
+          unzip -l ptrm-*.vsix | grep -q "ptrm-icon-128.png" || (echo "Missing PNG icon" && exit 1)
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ptrm-vsix
+          path: vscode-extension/ptrm-*.vsix

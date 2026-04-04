@@ -1,0 +1,43 @@
+[package]
+name = "portrm"
+version = "1.0.0"
+edition = "2024"
+description = "portrm — blazing fast port & process manager. Kill and list processes on ports from your terminal."
+license = "MIT"
+repository = "https://github.com/abhishekayu/portrm"
+homepage = "https://github.com/abhishekayu/portrm"
+readme = "README.md"
+keywords = ["port", "kill", "process", "cli", "developer-tools"]
+categories = ["command-line-utilities", "development-tools"]
+exclude = ["npm/", "Formula/", "scripts/", ".github/", "target/"]
+
+[[bin]]
+name = "ptrm"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive", "color"] }
+clap_complete = "4"
+sysinfo = "0.35"
+colored = "3"
+anyhow = "1"
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tabled = "0.18"
+dialoguer = "0.11"
+regex = "1"
+libc = "0.2"
+ratatui = "0.29"
+crossterm = "0.28"
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "6"
+toml = "0.8"
+ctrlc = "3"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true
+panic = "abort"
+codegen-units = 1

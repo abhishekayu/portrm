@@ -1,0 +1,90 @@
+portrm - Stop guessing what's running on your machine
+
+portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.
+Built in Rust. ~1.2MB binary. Zero runtime dependencies.
+
+KEYWORDS
+portrm, port conflict, kill port, port scanner, EADDRINUSE, address already in use,
+port 3000 in use, port 8080 in use, free port, kill process on port,
+lsof alternative, fkill alternative, kill-port alternative,
+developer tools, developer productivity, dev environment, dev server,
+CLI tool, command line tool, terminal tool,
+zombie process, stale server, idle process,
+port management, process manager, process debugging,
+Next.js port conflict, React port conflict, Vite port conflict,
+Django port conflict, Flask port conflict, Express port conflict,
+Node.js port conflict, Python port conflict,
+Docker port conflict, PostgreSQL port conflict, Redis port conflict,
+graceful shutdown, SIGTERM, process kill,
+macOS developer tools, Linux developer tools, Windows developer tools,
+Rust CLI, cross-platform CLI, Homebrew CLI, npm CLI, cargo CLI,
+dev server recovery, port recovery, fix dev server,
+interactive TUI, terminal UI, ratatui,
+dev stack manager, ptrm up, ptrm down, ptrm watch,
+port monitoring, crash detection, auto-restart, preflight check,
+project config, .ptrm.toml, service orchestration,
+port registry, port conflict detection, ptrm ci, ptrm use,
+profile switching, dev staging profiles, CI/CD port check,
+monorepo support, multi-port fix, PID tracking, actual port detection,
+package.json port detection, smart init, auto-detect port
+
+USE CASES
+- How to kill process on port 3000
+- How to fix EADDRINUSE error
+- How to find what is using a port
+- How to free a port on macOS
+- How to free a port on Linux
+- How to kill zombie process
+- How to fix port already in use
+- How to scan all open ports
+- How to restart dev server after crash
+- How to clean up stale dev servers
+- How to start dev stack with one command
+- How to monitor port and auto-restart
+- How to check ports before starting services
+- How to validate port assignments for conflicts
+- How to run port checks in CI/CD pipeline
+- How to switch between dev and staging port configs
+- Alternative to lsof -i :3000
+- Alternative to kill -9
+- Alternative to kill-port
+- Alternative to fkill
+- Alternative to docker-compose for local processes
+- Best port management tool
+- Best developer productivity CLI
+- Port conflict resolver
+
+COMMANDS
+ptrm scan - List all listening ports with process info
+ptrm fix <ports> - Safely kill process on one or more ports
+ptrm fix <ports> --run "cmd" - Kill and auto-restart
+ptrm doctor - Auto-diagnose dev environment
+ptrm group - Group ports by role
+ptrm history - View action history
+ptrm project - Detect project type
+ptrm ui - Interactive terminal UI
+ptrm init - Create .ptrm.toml config file
+ptrm up - Start all services from .ptrm.toml
+ptrm up -y - Start services, auto-fix port conflicts
+ptrm down - Stop all services from .ptrm.toml
+ptrm preflight - Check if ports are free before starting
+ptrm watch <port> - Monitor port and auto-restart on crash
+ptrm registry check - Validate port assignments for conflicts
+ptrm ci - Run all checks non-interactively (CI/CD mode)
+ptrm ci --json - CI mode with JSON output
+ptrm use <profile> - Switch to a named profile
+
+INSTALL
+brew tap abhishekayu/tap && brew install portrm
+cargo install portrm
+npm install -g portrm
+npx portrm scan
+curl -fsSL https://raw.githubusercontent.com/abhishekayu/portrm/main/install.sh | sh
+
+LINKS
+https://github.com/abhishekayu/portrm
+https://crates.io/crates/portrm
+https://www.npmjs.com/package/portrm
+
+LICENSE
+MIT - free for personal and commercial use
