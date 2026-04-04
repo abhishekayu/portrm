@@ -5,7 +5,12 @@
 - **Name**: portrm
 - **Website**: https://portrm.dev
 - **Tagline**: Stop guessing what's running on your machine.
-- **Description**: portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.
+- **Description**: **portrm** is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked.
+
+Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments — all from your terminal, in milliseconds.
+
+Built for real-world development workflows where every second counts.
+
 - **Short description**: portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.
 - **Category**: Developer Tools / CLI / Productivity
 - **Language**: Rust
@@ -73,6 +78,10 @@
 - ptrm restart service dev
 - ptrm status dashboard
 - ptrm log streaming docker
+- VS Code port manager extension
+- VS Code kill port extension
+- VS Code process manager extension
+- port management VS Code sidebar
 
 ## Competitor Keywords
 

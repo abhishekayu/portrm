@@ -251,6 +251,7 @@ Next.js, Vite, Create React App, Webpack Dev Server, Django, Flask, Express, Pos
 - Repository: https://github.com/abhishekayu/portrm
 - crates.io: https://crates.io/crates/portrm
 - npm: https://www.npmjs.com/package/portrm
+- VS Code: https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli
 - License: MIT
 - Language: Rust
 - Binary size: ~1.2MB

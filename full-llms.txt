@@ -4,8 +4,11 @@
 
 https://portrm.dev
 
-portrm is a fast, cross-platform CLI tool written in Rust for port management, process debugging, and dev environment recovery. It replaces the manual lsof + kill -9 workflow with a single intelligent command.
+portrm is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked.
 
+Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments - all from your terminal, in milliseconds.
+
+Built for real-world development workflows where every second counts.
 ## What portrm does
 
 portrm detects what process is using a port, classifies the service (Next.js, Vite, Django, Flask, Express, PostgreSQL, Redis, Docker, etc.), assesses whether it's safe to kill, sends a graceful shutdown signal, verifies the port is free, and suggests or auto-runs the restart command.
@@ -348,5 +351,6 @@ Modules:
 - GitHub: https://github.com/abhishekayu/portrm
 - crates.io: https://crates.io/crates/portrm
 - npm: https://www.npmjs.com/package/portrm
+- VS Code: https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli
 - Homebrew: brew tap abhishekayu/tap && brew install portrm
 - License: MIT

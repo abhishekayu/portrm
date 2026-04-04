@@ -4,13 +4,17 @@
 </p>
   <h1 align="center">Portrm</h1>
   <p align="center"><strong>Stop guessing what's running on your machine.</strong></p>
-  <p align="center">portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.</p>
+  <p align="center">portrm is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked.
+
+Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments - all from your terminal, in milliseconds.
+
+Built for real-world development workflows where every second counts.</p>
   <p align="center">
     <a href="https://crates.io/crates/portrm"><img src="https://img.shields.io/crates/v/portrm.svg" alt="crates.io"></a>
     <a href="https://www.npmjs.com/package/portrm"><img src="https://img.shields.io/npm/v/portrm.svg" alt="npm"></a>
     <a href="https://github.com/abhishekayu/portrm/releases"><img src="https://img.shields.io/github/v/release/abhishekayu/portrm" alt="release"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
-    <a href="https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm"><img src="https://img.shields.io/visual-studio-marketplace/v/abhishekayu.portrm?label=VS%20Code" alt="VS Code Marketplace"></a>
+    <a href="https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli"><img src="https://img.shields.io/visual-studio-marketplace/v/abhishekayu.portrm-cli?label=VS%20Code" alt="VS Code Marketplace"></a>
   </p>
 </p>
 
@@ -701,7 +705,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 Manage ports and services directly from the VS Code sidebar -- no terminal needed.
 
-[![Install from VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Install%20Extension-007ACC?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm)
+[![Install from VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Install%20Extension-007ACC?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli)
 
 **Features:**
 
@@ -712,10 +716,10 @@ Manage ports and services directly from the VS Code sidebar -- no terminal neede
 - Auto-install and update the ptrm CLI binary
 
 ```bash
-code --install-extension abhishekayu.portrm
+code --install-extension abhishekayu.portrm-cli
 ```
 
-[View on Marketplace](https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm)
+[View on Marketplace](https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli)
 
 ---
 

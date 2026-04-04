@@ -72,13 +72,13 @@ ptrm preflight                     # check ports before starting
 
 Manage ports and services directly from the VS Code sidebar.
 
-[![Install from VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Install%20Extension-007ACC?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm)
+[![Install from VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Install%20Extension-007ACC?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli)
 
 ```bash
-code --install-extension abhishekayu.portrm
+code --install-extension abhishekayu.portrm-cli
 ```
 
-[View on Marketplace](https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm)
+[View on Marketplace](https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli)
 
 ## What is ptrm?
 

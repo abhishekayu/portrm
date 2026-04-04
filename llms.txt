@@ -4,7 +4,11 @@
 
 https://portrm.dev
 
-portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.
+portrm is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked.
+
+Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments - all from your terminal, in milliseconds.
+
+Built for real-world development workflows where every second counts.
 
 ## Quick Start
 
@@ -26,4 +30,5 @@ Pre-flight check: ptrm preflight 3000 8080
 - Install: https://github.com/abhishekayu/portrm#install
 - npm: https://www.npmjs.com/package/portrm
 - crates.io: https://crates.io/crates/portrm
+- VS Code: https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli
 - Issues: https://github.com/abhishekayu/portrm/issues

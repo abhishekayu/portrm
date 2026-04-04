@@ -1,7 +1,9 @@
 portrm - Stop guessing what's running on your machine
 https://portrm.dev
 
-portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.
+portrm is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked.
+Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments — all from your terminal, in milliseconds.
+Built for real-world development workflows where every second counts.
 Built in Rust. ~1.2MB binary. Zero runtime dependencies.
 
 KEYWORDS
@@ -27,7 +29,7 @@ project config, .ptrm.toml, service orchestration,
 port registry, port conflict detection, ptrm ci, ptrm use,
 profile switching, dev staging profiles, CI/CD port check,
 monorepo support, multi-port fix, PID tracking, actual port detection,
-package.json port detection, smart init, auto-detect port
+package.json port detection, smart init, auto-detect port,\nVS Code port manager, VS Code kill port extension, VS Code process manager,\nport management VS Code extension, VS Code developer tools extension
 
 USE CASES
 - How to kill process on port 3000
@@ -86,6 +88,7 @@ LINKS
 https://github.com/abhishekayu/portrm
 https://crates.io/crates/portrm
 https://www.npmjs.com/package/portrm
+https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli
 
 LICENSE
 MIT - free for personal and commercial use
