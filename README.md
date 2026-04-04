@@ -20,19 +20,9 @@ Built for real-world development workflows where every second counts.</p>
 
 <br>
 
-```
-$ ptrm fix 3000
-
-  ⚡ Port 3000 in use
-  → Next.js (PID 81106) running for 7m 21s
-  → 🛡 safe to kill
-
-  • Sending SIGTERM to PID 81106
-  • Verified: PID 81106 has exited
-
-  ✔ Port 3000 is now free
-  Restart: npm run dev
-```
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/504fe495-e5d0-4acd-84e6-4f8f578c12dd" width="400" height="400" alt="Portrm Demo" />
+</div>
 
 <p align="center">
   <b>Detects the process. Checks if it's safe. Kills it gracefully. Tells you how to restart.</b><br>
