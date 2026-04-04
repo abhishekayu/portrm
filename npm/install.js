@@ -14,11 +14,11 @@ function getPlatformInfo() {
   const arch = process.arch;
 
   const platformMap = {
-    "darwin-x64": "ptrm-darwin-x86_64",
-    "darwin-arm64": "ptrm-darwin-aarch64",
-    "linux-x64": "ptrm-linux-x86_64",
-    "linux-arm64": "ptrm-linux-aarch64",
-    "win32-x64": "ptrm-windows-x86_64",
+    "darwin-x64": "portrm-darwin-amd64",
+    "darwin-arm64": "portrm-darwin-arm64",
+    "linux-x64": "portrm-linux-amd64",
+    "linux-arm64": "portrm-linux-arm64",
+    "win32-x64": "portrm-windows-amd64",
   };
 
   const key = `${platform}-${arch}`;

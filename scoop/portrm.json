@@ -5,7 +5,7 @@
   "license": "MIT",
   "architecture": {
     "64bit": {
-      "url": "https://github.com/abhishekayu/portrm/releases/download/v1.0.0/ptrm-windows-amd64.zip",
+      "url": "https://github.com/abhishekayu/portrm/releases/download/v1.0.0/portrm-windows-amd64.zip",
       "hash": ""
     }
   },
@@ -16,7 +16,7 @@
   "autoupdate": {
     "architecture": {
       "64bit": {
-        "url": "https://github.com/abhishekayu/portrm/releases/download/v$version/ptrm-windows-amd64.zip"
+        "url": "https://github.com/abhishekayu/portrm/releases/download/v$version/portrm-windows-amd64.zip"
       }
     }
   }

@@ -65,19 +65,19 @@ jobs:
         include:
           - target: x86_64-apple-darwin
             os: macos-latest
-            artifact: ptrm-darwin-amd64
+            artifact: portrm-darwin-amd64
           - target: aarch64-apple-darwin
             os: macos-14
-            artifact: ptrm-darwin-arm64
+            artifact: portrm-darwin-arm64
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
-            artifact: ptrm-linux-amd64
+            artifact: portrm-linux-amd64
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
-            artifact: ptrm-linux-arm64
+            artifact: portrm-linux-arm64
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-            artifact: ptrm-windows-amd64
+            artifact: portrm-windows-amd64
 
     runs-on: ${{ matrix.os }}
 
@@ -205,9 +205,9 @@ jobs:
           VERSION=${{ needs.create-release.outputs.version }}
           BASE="https://github.com/abhishekayu/portrm/releases/download/v${VERSION}"
 
-          SHA_ARM64=$(curl -sL "${BASE}/ptrm-darwin-arm64.tar.gz.sha256" | awk '{print $1}')
-          SHA_AMD64=$(curl -sL "${BASE}/ptrm-darwin-amd64.tar.gz.sha256" | awk '{print $1}')
-          SHA_LINUX=$(curl -sL "${BASE}/ptrm-linux-amd64.tar.gz.sha256" | awk '{print $1}')
+          SHA_ARM64=$(curl -sL "${BASE}/portrm-darwin-arm64.tar.gz.sha256" | awk '{print $1}')
+          SHA_AMD64=$(curl -sL "${BASE}/portrm-darwin-amd64.tar.gz.sha256" | awk '{print $1}')
+          SHA_LINUX=$(curl -sL "${BASE}/portrm-linux-amd64.tar.gz.sha256" | awk '{print $1}')
 
           echo "arm64=${SHA_ARM64}" >> "$GITHUB_OUTPUT"
           echo "amd64=${SHA_AMD64}" >> "$GITHUB_OUTPUT"
@@ -229,16 +229,16 @@ jobs:
 
             on_macos do
               if Hardware::CPU.arm?
-                url "https://github.com/abhishekayu/portrm/releases/download/vVERSION_PLACEHOLDER/ptrm-darwin-arm64.tar.gz"
+                url "https://github.com/abhishekayu/portrm/releases/download/vVERSION_PLACEHOLDER/portrm-darwin-arm64.tar.gz"
                 sha256 "SHA_ARM64_PLACEHOLDER"
               else
-                url "https://github.com/abhishekayu/portrm/releases/download/vVERSION_PLACEHOLDER/ptrm-darwin-amd64.tar.gz"
+                url "https://github.com/abhishekayu/portrm/releases/download/vVERSION_PLACEHOLDER/portrm-darwin-amd64.tar.gz"
                 sha256 "SHA_AMD64_PLACEHOLDER"
               end
             end
 
             on_linux do
-              url "https://github.com/abhishekayu/portrm/releases/download/vVERSION_PLACEHOLDER/ptrm-linux-amd64.tar.gz"
+              url "https://github.com/abhishekayu/portrm/releases/download/vVERSION_PLACEHOLDER/portrm-linux-amd64.tar.gz"
               sha256 "SHA_LINUX_PLACEHOLDER"
             end
 
@@ -310,12 +310,12 @@ jobs:
         run: |
           VERSION=${{ needs.create-release.outputs.version }}
           ARCH=${{ matrix.arch }}
-          PKG="ptrm_${VERSION}_${ARCH}"
+          PKG="portrm_${VERSION}_${ARCH}"
           mkdir -p "${PKG}/DEBIAN"
           mkdir -p "${PKG}/usr/local/bin"
           cp "target/${{ matrix.target }}/release/ptrm" "${PKG}/usr/local/bin/ptrm"
           chmod 755 "${PKG}/usr/local/bin/ptrm"
-          printf 'Package: ptrm\nVersion: %s\nSection: utils\nPriority: optional\nArchitecture: %s\nMaintainer: abhishekayu <github@abhishekayu>\nHomepage: https://github.com/abhishekayu/portrm\nDescription: portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments\n Built for real-world development workflows.\n' "${VERSION}" "${ARCH}" > "${PKG}/DEBIAN/control"
+          printf 'Package: portrm\nVersion: %s\nSection: utils\nPriority: optional\nArchitecture: %s\nMaintainer: abhishekayu <github@abhishekayu>\nHomepage: https://github.com/abhishekayu/portrm\nDescription: portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments\n Built for real-world development workflows.\n' "${VERSION}" "${ARCH}" > "${PKG}/DEBIAN/control"
           dpkg-deb --build "${PKG}"
           sha256sum "${PKG}.deb" > "${PKG}.deb.sha256"
 
@@ -325,8 +325,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./ptrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb
-          asset_name: ptrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb
+          asset_path: ./portrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb
+          asset_name: portrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb
           asset_content_type: application/vnd.debian.binary-package
 
       - name: Upload .deb checksum
@@ -335,8 +335,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./ptrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb.sha256
-          asset_name: ptrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb.sha256
+          asset_path: ./portrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb.sha256
+          asset_name: portrm_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb.sha256
           asset_content_type: text/plain
 
   update-scoop:
@@ -349,7 +349,7 @@ jobs:
         run: |
           VERSION=${{ needs.create-release.outputs.version }}
           BASE="https://github.com/abhishekayu/portrm/releases/download/v${VERSION}"
-          SHA_WIN=$(curl -sL "${BASE}/ptrm-windows-amd64.zip.sha256" | awk '{print $1}')
+          SHA_WIN=$(curl -sL "${BASE}/portrm-windows-amd64.zip.sha256" | awk '{print $1}')
 
           mkdir -p scoop
           python3 -c "
@@ -359,10 +359,10 @@ jobs:
             'description': 'portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments',
             'homepage': 'https://github.com/abhishekayu/portrm',
             'license': 'MIT',
-            'architecture': {'64bit': {'url': '${BASE}/ptrm-windows-amd64.zip', 'hash': '${SHA_WIN}'}},
+            'architecture': {'64bit': {'url': '${BASE}/portrm-windows-amd64.zip', 'hash': '${SHA_WIN}'}},
             'bin': 'ptrm.exe',
             'checkver': {'github': 'https://github.com/abhishekayu/portrm'},
-            'autoupdate': {'architecture': {'64bit': {'url': 'https://github.com/abhishekayu/portrm/releases/download/v\$version/ptrm-windows-amd64.zip'}}}
+            'autoupdate': {'architecture': {'64bit': {'url': 'https://github.com/abhishekayu/portrm/releases/download/v\$version/portrm-windows-amd64.zip'}}}
           }
           print(json.dumps(m, indent=2))
           " > scoop/portrm.json

@@ -76,19 +76,19 @@ function getTarget() {
   const platform = os.platform();
   const arch = os.arch();
   if (platform === "darwin" && arch === "arm64") {
-    return "ptrm-darwin-arm64";
+    return "portrm-darwin-arm64";
   }
   if (platform === "darwin" && arch === "x64") {
-    return "ptrm-darwin-amd64";
+    return "portrm-darwin-amd64";
   }
   if (platform === "linux" && arch === "x64") {
-    return "ptrm-linux-amd64";
+    return "portrm-linux-amd64";
   }
   if (platform === "linux" && arch === "arm64") {
-    return "ptrm-linux-arm64";
+    return "portrm-linux-arm64";
   }
   if (platform === "win32" && arch === "x64") {
-    return "ptrm-windows-amd64";
+    return "portrm-windows-amd64";
   }
   return undefined;
 }

@@ -17,10 +17,10 @@ REPO = "abhishekayu/portrm"
 FORMULA_PATH = Path(__file__).parent.parent / "Formula" / "portrm.rb"
 
 TARGETS = [
-    "ptrm-darwin-amd64.tar.gz",
-    "ptrm-darwin-arm64.tar.gz",
-    "ptrm-linux-amd64.tar.gz",
-    "ptrm-linux-arm64.tar.gz",
+    "portrm-darwin-amd64.tar.gz",
+    "portrm-darwin-arm64.tar.gz",
+    "portrm-linux-amd64.tar.gz",
+    "portrm-linux-arm64.tar.gz",
 ]
 
 

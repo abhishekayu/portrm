@@ -102,7 +102,7 @@ detect_platform() {
             ;;
     esac
 
-    TARGET="ptrm-${OS_NAME}-${ARCH_NAME}"
+    TARGET="portrm-${OS_NAME}-${ARCH_NAME}"
     success "Detected ${WHITE}${OS_LABEL} ${ARCH_LABEL}${RESET}"
 }
 
