@@ -123,7 +123,7 @@ printf "  ${BOLD}━━━━━━━━━━━━━━━━━━━━━
 section "META"
 
 t "ptrm --version" $P --version
-t_ok_contains "--version contains 0." "0\." $P --version
+t_ok_contains "--version contains version number" "[0-9]\+\.[0-9]\+\.[0-9]\+" $P --version
 t "ptrm --help" $P --help
 t_ok_contains "--help lists scan" "scan" $P --help
 t_ok_contains "--help lists kill" "kill" $P --help
