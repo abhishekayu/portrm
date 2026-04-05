@@ -16,23 +16,44 @@ keywords = [
     "port",
     "kill-port",
     "port-conflict",
+    "port-scanner",
+    "port-kill",
+    "port-management",
     "developer-tools",
     "cli",
     "devserver",
     "process",
+    "process-manager",
     "debug",
-    "port-scanner",
     "dev-environment",
+    "rust",
+    "cross-platform",
+    "docker",
+    "devops",
+    "terminal",
+    "tui",
+    "lsof",
+    "netstat",
+    "fkill",
+    "kill-process",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development",
     "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: System :: Monitoring",
     "Topic :: System :: Networking",
+    "Topic :: System :: Systems Administration",
     "Topic :: Utilities",
 ]
 
@@ -40,6 +61,9 @@ classifiers = [
 Homepage = "https://portrm.dev"
 Repository = "https://github.com/abhishekayu/portrm"
 Issues = "https://github.com/abhishekayu/portrm/issues"
+Documentation = "https://github.com/abhishekayu/portrm#readme"
+Changelog = "https://github.com/abhishekayu/portrm/releases"
+"VS Code Extension" = "https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli"
 
 [project.scripts]
 ptrm = "portrm:main"
