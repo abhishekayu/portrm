@@ -126,8 +126,23 @@ const SYSTEM_CRITICAL: &[&str] = &[
     "systemd-udevd",
     "systemd-logind",
     "dbus-daemon",
+    // Windows system processes
+    "system",
+    "smss.exe",
+    "csrss.exe",
+    "wininit.exe",
+    "winlogon.exe",
+    "lsass.exe",
+    "services.exe",
+    "svchost.exe",
+    "dwm.exe",
+    "explorer.exe",
+    "spoolsv.exe",
+    "lsm.exe",
+    "wlanext.exe",
     // Remote access -- killing locks you out
     "sshd",
+    "sshd.exe",
     // Scheduling daemons
     "cron",
     "crond",
@@ -179,7 +194,7 @@ impl<'a> FixEngine<'a> {
         };
 
         if let Some(ref proc_) = port_info.process {
-            port_info.service = Some(ServiceClassifier::classify(proc_));
+            port_info.service = Some(ServiceClassifier::classify_with_port(proc_, port));
         }
 
         let verdict = self.safety_checks(
@@ -234,8 +249,9 @@ impl<'a> FixEngine<'a> {
 
         // Rule 2: System-critical process names.
         let name_lower = proc_.name.to_lowercase();
+        let name_bare = name_lower.strip_suffix(".exe").unwrap_or(&name_lower);
         for &critical in SYSTEM_CRITICAL {
-            if name_lower == critical {
+            if name_lower == critical || name_bare == critical {
                 return SafetyVerdict::Block {
                     reason: format!(
                         "{} is a system-critical process -- killing it could destabilize the system",
@@ -248,7 +264,8 @@ impl<'a> FixEngine<'a> {
         // Rule 3: Database services -- warn about data loss.
         if matches!(
             service_kind,
-            Some(ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis)
+            Some(ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis
+                | ServiceKind::SQLServer | ServiceKind::MongoDB)
         ) {
             return SafetyVerdict::Warn {
                 reason: format!(
@@ -259,7 +276,8 @@ impl<'a> FixEngine<'a> {
         }
 
         // Rule 4: Infrastructure services -- warn about cascading effects.
-        if matches!(service_kind, Some(ServiceKind::Docker | ServiceKind::Nginx)) {
+        if matches!(service_kind, Some(ServiceKind::Docker | ServiceKind::Nginx
+            | ServiceKind::Apache | ServiceKind::IIS)) {
             return SafetyVerdict::Warn {
                 reason: format!(
                     "{} manages other services -- killing it may have cascading effects",
@@ -308,11 +326,12 @@ impl<'a> FixEngine<'a> {
 
         match port_info.service.as_ref().map(|s| s.kind) {
             // Databases: always graceful only -- never escalate to SIGKILL.
-            Some(ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis) => {
+            Some(ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis
+                | ServiceKind::SQLServer | ServiceKind::MongoDB) => {
                 Strategy::Graceful
             }
             // Infrastructure: graceful only.
-            Some(ServiceKind::Docker | ServiceKind::Nginx) => Strategy::Graceful,
+            Some(ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::IIS) => Strategy::Graceful,
             // Dev servers: safe to escalate.
             Some(kind) if kind.safe_to_kill() => Strategy::Escalating,
             // Unknown: be cautious.

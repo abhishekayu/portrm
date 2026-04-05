@@ -51,7 +51,7 @@ pub fn diagnose(adapter: &dyn PlatformAdapter) -> Vec<Diagnosis> {
     // Classify all services.
     for info in &mut ports {
         if let Some(ref proc_) = info.process {
-            info.service = Some(ServiceClassifier::classify(proc_));
+            info.service = Some(ServiceClassifier::classify_with_port(proc_, info.port));
         }
     }
 

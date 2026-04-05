@@ -39,17 +39,20 @@ pub fn classify_role(info: &PortInfo) -> PortRole {
             ServiceKind::NextJs | ServiceKind::Vite | ServiceKind::CreateReactApp => {
                 return PortRole::Frontend;
             }
-            ServiceKind::Django | ServiceKind::Flask | ServiceKind::NodeGeneric | ServiceKind::Python => {
+            ServiceKind::Django | ServiceKind::Flask | ServiceKind::NodeGeneric
+            | ServiceKind::Python | ServiceKind::Java | ServiceKind::DotNet
+            | ServiceKind::Go | ServiceKind::Rust | ServiceKind::Ruby => {
                 // Could be frontend or backend; use port heuristic.
                 if is_frontend_port(info.port) {
                     return PortRole::Frontend;
                 }
                 return PortRole::Backend;
             }
-            ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis => {
+            ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis
+            | ServiceKind::SQLServer | ServiceKind::MongoDB => {
                 return PortRole::Database;
             }
-            ServiceKind::Docker | ServiceKind::Nginx => {
+            ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::IIS => {
                 return PortRole::Infrastructure;
             }
             ServiceKind::Unknown => {}

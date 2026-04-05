@@ -242,8 +242,34 @@ export function formatMemory(bytes: number | undefined): string {
   if (!bytes) {
     return "";
   }
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(0)} KB`;
+  const GB = 1024 * 1024 * 1024;
+  const MB = 1024 * 1024;
+  const KB = 1024;
+  if (bytes >= GB) {
+    return `${(bytes / GB).toFixed(1)} GB`;
   }
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes >= MB) {
+    return `${(bytes / MB).toFixed(1)} MB`;
+  }
+  if (bytes >= KB) {
+    return `${(bytes / KB).toFixed(0)} KB`;
+  }
+  return `${bytes} B`;
+}
+
+export function formatUptime(seconds: number | undefined): string {
+  if (!seconds || seconds <= 0) {
+    return "";
+  }
+  const s = Math.floor(seconds);
+  if (s < 60) {
+    return `${s}s`;
+  }
+  if (s < 3600) {
+    return `${Math.floor(s / 60)}m ${s % 60}s`;
+  }
+  if (s < 86400) {
+    return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
+  }
+  return `${Math.floor(s / 86400)}d ${Math.floor((s % 86400) / 3600)}h`;
 }

@@ -7,6 +7,8 @@ import {
   getProjectName,
   formatServiceLabel,
   formatPort,
+  formatMemory,
+  formatUptime,
 } from "./utils";
 
 // ── Tree item types ────────────────────────────────────────────────
@@ -46,6 +48,9 @@ export class PtrmTreeProvider implements vscode.TreeDataProvider<NodeData> {
   /** Expose state for the status bar */
   get services(): ServiceStatus[] {
     return this._services;
+  }
+  get ports(): PortInfo[] {
+    return this._ports;
   }
   get projectMode(): boolean {
     return this._projectMode;
@@ -104,10 +109,17 @@ export class PtrmTreeProvider implements vscode.TreeDataProvider<NodeData> {
       element.collapsible ?? vscode.TreeItemCollapsibleState.None
     );
     item.description = element.description;
-    item.tooltip = element.tooltip;
     item.iconPath = element.icon;
     item.contextValue = element.contextValue;
     item.command = element.command;
+
+    // Use markdown for rich tooltips on port items
+    if (element.kind === "port" && element.tooltip) {
+      item.tooltip = new vscode.MarkdownString(element.tooltip, true);
+    } else {
+      item.tooltip = element.tooltip;
+    }
+
     return item;
   }
 
@@ -247,37 +259,104 @@ export class PtrmTreeProvider implements vscode.TreeDataProvider<NodeData> {
   }
 
   private buildPortItem(info: PortInfo): NodeData {
-    const label = formatServiceLabel(info);
-    const description = formatPort(info.port);
+    const service = formatServiceLabel(info);
     const pid = info.process?.pid;
+    const mem = formatMemory(info.process?.memory_bytes);
+    const uptime = formatUptime(info.process?.runtime);
 
-    let tooltip = `Port ${info.port}`;
-    if (info.process) {
-      tooltip += `\nProcess: ${info.process.name} (PID ${info.process.pid})`;
-      if (info.process.user) {
-        tooltip += `\nUser: ${info.process.user}`;
-      }
-    }
-    if (info.docker_container) {
-      tooltip += `\nDocker: ${info.docker_container.name} (${info.docker_container.image})`;
-    }
+    // Build concise description: "Node.js  ·  PID 1234  ·  48.2 MB  ·  2h 15m"
+    const parts: string[] = [service];
+    if (pid) { parts.push(`PID ${pid}`); }
+    if (mem) { parts.push(mem); }
+    if (uptime) { parts.push(uptime); }
+    const description = parts.join("  \u00b7  ");
+
+    // Markdown tooltip with full details
+    const tooltip = this.buildPortTooltip(info);
 
     return {
       kind: "port",
       label: `${info.port}`,
-      description: `${label}${pid ? ` (PID ${pid})` : ""}`,
-      icon: info.docker_container
-        ? new vscode.ThemeIcon("package")
-        : new vscode.ThemeIcon("radio-tower"),
+      description,
+      icon: this.getPortIcon(info),
       contextValue: "port",
       port: info.port,
       tooltip,
       command: {
-        command: "ptrm.logs",
-        title: "View Logs",
+        command: "ptrm.info",
+        title: "Inspect Port",
         arguments: [{ port: info.port }],
       },
     };
+  }
+
+  private getPortIcon(info: PortInfo): vscode.ThemeIcon {
+    if (info.docker_container) {
+      return new vscode.ThemeIcon("package", new vscode.ThemeColor("charts.blue"));
+    }
+    const kind = info.service?.kind;
+    switch (kind) {
+      case "NextJs":
+      case "Vite":
+      case "CreateReactApp":
+        return new vscode.ThemeIcon("globe", new vscode.ThemeColor("charts.green"));
+      case "Django":
+      case "Flask":
+      case "NodeGeneric":
+      case "Python":
+      case "Java":
+      case "DotNet":
+      case "Go":
+      case "Rust":
+      case "Ruby":
+        return new vscode.ThemeIcon("server", new vscode.ThemeColor("charts.green"));
+      case "PostgreSQL":
+      case "MySQL":
+      case "Redis":
+      case "SQLServer":
+      case "MongoDB":
+        return new vscode.ThemeIcon("database", new vscode.ThemeColor("charts.yellow"));
+      case "Nginx":
+      case "Apache":
+      case "IIS":
+        return new vscode.ThemeIcon("cloud", new vscode.ThemeColor("charts.blue"));
+      case "Docker":
+        return new vscode.ThemeIcon("package", new vscode.ThemeColor("charts.blue"));
+      default:
+        return new vscode.ThemeIcon("radio-tower");
+    }
+  }
+
+  private buildPortTooltip(info: PortInfo): string {
+    const lines: string[] = [];
+    lines.push(`**Port ${info.port}** (${info.protocol})`);
+    lines.push("");
+
+    if (info.process) {
+      const p = info.process;
+      lines.push(`| | |`);
+      lines.push(`|---|---|`);
+      lines.push(`| **Process** | ${p.name} |`);
+      lines.push(`| **PID** | ${p.pid} |`);
+      lines.push(`| **Command** | \`${p.command.length > 80 ? p.command.substring(0, 77) + "..." : p.command}\` |`);
+      if (p.user) { lines.push(`| **User** | ${p.user} |`); }
+      if (p.memory_bytes) { lines.push(`| **Memory** | ${formatMemory(p.memory_bytes)} |`); }
+      if (p.cpu_usage !== undefined) { lines.push(`| **CPU** | ${p.cpu_usage.toFixed(1)}% |`); }
+      if (p.runtime) { lines.push(`| **Uptime** | ${formatUptime(p.runtime)} |`); }
+      if (p.working_dir) { lines.push(`| **CWD** | ${p.working_dir} |`); }
+    }
+
+    if (info.service && info.service.kind !== "Unknown") {
+      lines.push("");
+      lines.push(`Service: **${info.service.kind}** (${Math.round(info.service.confidence * 100)}% confidence)`);
+    }
+
+    if (info.docker_container) {
+      lines.push("");
+      lines.push(`Docker: **${info.docker_container.name}** (${info.docker_container.image})`);
+    }
+
+    return lines.join("\n");
   }
 
   private buildActionsSection(): NodeData {
@@ -375,7 +454,7 @@ export class PtrmTreeProvider implements vscode.TreeDataProvider<NodeData> {
       kind: "section",
       label: "Actions",
       icon: new vscode.ThemeIcon("zap"),
-      collapsible: vscode.TreeItemCollapsibleState.Expanded,
+      collapsible: vscode.TreeItemCollapsibleState.Collapsed,
       children,
     };
   }

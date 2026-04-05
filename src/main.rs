@@ -184,10 +184,10 @@ fn cmd_scan(scanner: &PortScanner, ports: &[u16], dev: bool, json: bool) -> anyh
         results.retain(|p| is_dev_port(p.port));
     }
 
-    // Classify each result.
+    // Classify each result using port context.
     for info in &mut results {
         if let Some(ref proc_) = info.process {
-            info.service = Some(ServiceClassifier::classify(proc_));
+            info.service = Some(ServiceClassifier::classify_with_port(proc_, info.port));
         }
     }
 
@@ -443,7 +443,7 @@ fn cmd_info(scanner: &PortScanner, port: u16, json: bool) -> anyhow::Result<()> 
         }
         Some(mut info) => {
             if let Some(ref proc_) = info.process {
-                info.service = Some(ServiceClassifier::classify(proc_));
+                info.service = Some(ServiceClassifier::classify_with_port(proc_, info.port));
             }
 
             if json {
@@ -497,7 +497,7 @@ fn cmd_log(scanner: &PortScanner, port: u16) -> anyhow::Result<()> {
         Some(mut info) => {
             // Classify so we get the restart_hint.
             if let Some(ref proc_) = info.process {
-                info.service = Some(classifier::ServiceClassifier::classify(proc_));
+                info.service = Some(classifier::ServiceClassifier::classify_with_port(proc_, info.port));
             }
 
             let owner = log::resolve_owner(&info, port)
@@ -542,7 +542,7 @@ fn cmd_group(adapter: &dyn platform::PlatformAdapter, dev: bool, json: bool) -> 
 
     for info in &mut results {
         if let Some(ref proc_) = info.process {
-            info.service = Some(ServiceClassifier::classify(proc_));
+            info.service = Some(ServiceClassifier::classify_with_port(proc_, info.port));
         }
     }
 

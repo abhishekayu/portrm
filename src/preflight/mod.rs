@@ -13,7 +13,7 @@ pub fn check_port(scanner: &PortScanner, port: u16) -> anyhow::Result<Option<Por
     match info {
         Some(mut port_info) => {
             if let Some(ref proc_) = port_info.process {
-                port_info.service = Some(ServiceClassifier::classify(proc_));
+                port_info.service = Some(ServiceClassifier::classify_with_port(proc_, port));
             }
             Ok(Some(port_info))
         }

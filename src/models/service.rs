@@ -15,6 +15,15 @@ pub enum ServiceKind {
     PostgreSQL,
     Redis,
     MySQL,
+    Java,
+    DotNet,
+    Go,
+    Rust,
+    Ruby,
+    Apache,
+    IIS,
+    SQLServer,
+    MongoDB,
     Unknown,
 }
 
@@ -34,6 +43,15 @@ impl ServiceKind {
             Self::PostgreSQL => "PostgreSQL",
             Self::Redis => "Redis",
             Self::MySQL => "MySQL",
+            Self::Java => "Java",
+            Self::DotNet => ".NET",
+            Self::Go => "Go",
+            Self::Rust => "Rust",
+            Self::Ruby => "Ruby",
+            Self::Apache => "Apache",
+            Self::IIS => "IIS",
+            Self::SQLServer => "SQL Server",
+            Self::MongoDB => "MongoDB",
             Self::Unknown => "Unknown",
         }
     }
@@ -49,6 +67,11 @@ impl ServiceKind {
                 | Self::Python
                 | Self::Django
                 | Self::Flask
+                | Self::Java
+                | Self::DotNet
+                | Self::Go
+                | Self::Rust
+                | Self::Ruby
         )
     }
 }

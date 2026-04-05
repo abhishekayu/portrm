@@ -70,7 +70,7 @@ impl PlatformAdapter for WindowsAdapter {
 
     fn graceful_kill(&self, pid: u32) -> Result<()> {
         let status = Command::new("taskkill")
-            .args(["/PID", &pid.to_string()])
+            .args(["/T", "/PID", &pid.to_string()])
             .status()?;
 
         if !status.success() {
@@ -81,7 +81,7 @@ impl PlatformAdapter for WindowsAdapter {
 
     fn force_kill(&self, pid: u32) -> Result<()> {
         let status = Command::new("taskkill")
-            .args(["/F", "/PID", &pid.to_string()])
+            .args(["/F", "/T", "/PID", &pid.to_string()])
             .status()?;
 
         if !status.success() {

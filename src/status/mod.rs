@@ -91,7 +91,7 @@ fn get_status_for_config(
                     }
                 } else if let Some(ref proc_) = port_info.process {
                     // Classify service to check if it matches.
-                    let classified = ServiceClassifier::classify(proc_);
+                    let classified = ServiceClassifier::classify_with_port(proc_, port);
                     port_info.service = Some(classified);
 
                     let is_match = is_expected_process(name, &port_info);

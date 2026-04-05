@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { PtrmTreeProvider } from "./treeProvider";
 import { registerCommands } from "./commands";
-import { hasConfig, resetBinaryCache } from "./utils";
+import { hasConfig, resetBinaryCache, formatMemory } from "./utils";
 import { ensureInstalled, checkForUpdate } from "./installer";
 
 const REFRESH_INTERVAL_MS = 4_000;
@@ -91,6 +91,8 @@ export function activate(context: vscode.ExtensionContext): void {
 // ── Status Bar ─────────────────────────────────────────────────────
 
 function updateStatusBar(provider: PtrmTreeProvider): void {
+  const portCount = provider.ports.length;
+
   if (provider.projectMode) {
     const services = provider.services;
     const running = services.filter((s) => s.status === "running").length;
@@ -110,8 +112,21 @@ function updateStatusBar(provider: PtrmTreeProvider): void {
 
     statusBarItem.text = parts.length > 0 ? `$(plug) ${parts.join("  ")}` : "$(plug) ptrm";
   } else {
-    statusBarItem.text = "$(plug) ptrm";
+    statusBarItem.text = portCount > 0 ? `$(plug) ${portCount} ports` : "$(plug) ptrm";
   }
+
+  // Build rich tooltip
+  const tipParts: string[] = ["Portrm"];
+  if (portCount > 0) {
+    tipParts.push(`${portCount} active port${portCount === 1 ? "" : "s"}`);
+    const totalMem = provider.ports.reduce(
+      (sum, p) => sum + (p.process?.memory_bytes ?? 0), 0
+    );
+    if (totalMem > 0) {
+      tipParts.push(`Total memory: ${formatMemory(totalMem)}`);
+    }
+  }
+  statusBarItem.tooltip = tipParts.join(" \u00b7 ");
 }
 
 // ── Deactivation ───────────────────────────────────────────────────

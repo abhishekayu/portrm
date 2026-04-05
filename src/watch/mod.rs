@@ -62,7 +62,7 @@ pub fn watch_port(
             Some(mut port_info) => {
                 // Port is up.
                 if let Some(ref proc_) = port_info.process {
-                    port_info.service = Some(ServiceClassifier::classify(proc_));
+                    port_info.service = Some(ServiceClassifier::classify_with_port(proc_, port));
                 }
 
                 let pid = port_info.process.as_ref().map(|p| p.pid).unwrap_or(0);

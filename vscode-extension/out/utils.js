@@ -45,6 +45,7 @@ exports.getProjectName = getProjectName;
 exports.formatPort = formatPort;
 exports.formatServiceLabel = formatServiceLabel;
 exports.formatMemory = formatMemory;
+exports.formatUptime = formatUptime;
 const vscode = __importStar(require("vscode"));
 const child_process_1 = require("child_process");
 const fs = __importStar(require("fs"));
@@ -236,9 +237,34 @@ function formatMemory(bytes) {
     if (!bytes) {
         return "";
     }
-    if (bytes < 1024 * 1024) {
-        return `${(bytes / 1024).toFixed(0)} KB`;
+    const GB = 1024 * 1024 * 1024;
+    const MB = 1024 * 1024;
+    const KB = 1024;
+    if (bytes >= GB) {
+        return `${(bytes / GB).toFixed(1)} GB`;
     }
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes >= MB) {
+        return `${(bytes / MB).toFixed(1)} MB`;
+    }
+    if (bytes >= KB) {
+        return `${(bytes / KB).toFixed(0)} KB`;
+    }
+    return `${bytes} B`;
+}
+function formatUptime(seconds) {
+    if (!seconds || seconds <= 0) {
+        return "";
+    }
+    const s = Math.floor(seconds);
+    if (s < 60) {
+        return `${s}s`;
+    }
+    if (s < 3600) {
+        return `${Math.floor(s / 60)}m ${s % 60}s`;
+    }
+    if (s < 86400) {
+        return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
+    }
+    return `${Math.floor(s / 86400)}d ${Math.floor((s % 86400) / 3600)}h`;
 }
 //# sourceMappingURL=utils.js.map

@@ -31,6 +31,15 @@ impl ProcessResolver {
             .with_user(UpdateKind::Always)
             .with_exe(UpdateKind::Always);
 
+        // First refresh initialises baselines; second yields accurate memory
+        // and CPU readings (required on Windows where the first pass may
+        // return zeroes for a fresh System instance).
+        sys.refresh_processes_specifics(
+            ProcessesToUpdate::Some(&[sysinfo_pid]),
+            true,
+            refresh,
+        );
+        std::thread::sleep(Duration::from_millis(50));
         sys.refresh_processes_specifics(
             ProcessesToUpdate::Some(&[sysinfo_pid]),
             true,
@@ -106,6 +115,12 @@ impl ProcessResolver {
             .with_user(UpdateKind::Always)
             .with_exe(UpdateKind::Always);
 
+        sys.refresh_processes_specifics(
+            ProcessesToUpdate::Some(&sysinfo_pids),
+            true,
+            refresh,
+        );
+        std::thread::sleep(Duration::from_millis(50));
         sys.refresh_processes_specifics(
             ProcessesToUpdate::Some(&sysinfo_pids),
             true,

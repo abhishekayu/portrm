@@ -2,7 +2,7 @@
   "name": "portrm-cli",
   "displayName": "Portrm CLI",
   "description": "Manage ports and processes without leaving your editor. Portrm brings blazing-fast port scanning, one-click process killing, and service restarts directly into VS Code - powered by the portrm CLI.",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "publisher": "abhishekayu",
   "license": "MIT",
   "icon": "resources/ptrm-icon-128.png",
@@ -43,21 +43,6 @@
     "service-manager",
     "dev-environment",
     "port-conflict",
-    "port",
-    "process",
-    "kill-port",
-    "port-manager",
-    "process-manager",
-    "port-scanner",
-    "developer-tools",
-    "devserver",
-    "localhost",
-    "network",
-    "debugging",
-    "docker",
-    "port-conflict",
-    "dev-environment",
-    "service-manager",
     "cli",
     "terminal",
     "process-killer",
@@ -256,12 +241,17 @@
         {
           "command": "ptrm.kill",
           "when": "viewItem == port",
-          "group": "inline"
+          "group": "inline@1"
+        },
+        {
+          "command": "ptrm.info",
+          "when": "viewItem == port",
+          "group": "inline@2"
         },
         {
           "command": "ptrm.logs",
           "when": "viewItem == port",
-          "group": "inline"
+          "group": "inline@3"
         },
         {
           "command": "ptrm.info",

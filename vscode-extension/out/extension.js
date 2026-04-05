@@ -107,6 +107,7 @@ function activate(context) {
 }
 // ── Status Bar ─────────────────────────────────────────────────────
 function updateStatusBar(provider) {
+    const portCount = provider.ports.length;
     if (provider.projectMode) {
         const services = provider.services;
         const running = services.filter((s) => s.status === "running").length;
@@ -125,8 +126,18 @@ function updateStatusBar(provider) {
         statusBarItem.text = parts.length > 0 ? `$(plug) ${parts.join("  ")}` : "$(plug) ptrm";
     }
     else {
-        statusBarItem.text = "$(plug) ptrm";
+        statusBarItem.text = portCount > 0 ? `$(plug) ${portCount} ports` : "$(plug) ptrm";
     }
+    // Build rich tooltip
+    const tipParts = ["Portrm"];
+    if (portCount > 0) {
+        tipParts.push(`${portCount} active port${portCount === 1 ? "" : "s"}`);
+        const totalMem = provider.ports.reduce((sum, p) => sum + (p.process?.memory_bytes ?? 0), 0);
+        if (totalMem > 0) {
+            tipParts.push(`Total memory: ${(0, utils_1.formatMemory)(totalMem)}`);
+        }
+    }
+    statusBarItem.tooltip = tipParts.join(" \u00b7 ");
 }
 // ── Deactivation ───────────────────────────────────────────────────
 function deactivate() {

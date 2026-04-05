@@ -407,11 +407,16 @@ pub fn print_port_free(port: u16) {
 fn colorize_service(kind: ServiceKind) -> String {
     let label = kind.label();
     match kind {
-        ServiceKind::NextJs | ServiceKind::Vite | ServiceKind::CreateReactApp => {
+        ServiceKind::NextJs | ServiceKind::Vite | ServiceKind::CreateReactApp
+        | ServiceKind::Java | ServiceKind::DotNet | ServiceKind::Go
+        | ServiceKind::Rust | ServiceKind::Ruby => {
             label.green().to_string()
         }
-        ServiceKind::Docker | ServiceKind::Nginx => label.blue().to_string(),
-        ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis => {
+        ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::IIS => {
+            label.blue().to_string()
+        }
+        ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis
+        | ServiceKind::SQLServer | ServiceKind::MongoDB => {
             label.yellow().to_string()
         }
         ServiceKind::Unknown => label.dimmed().to_string(),
@@ -421,11 +426,16 @@ fn colorize_service(kind: ServiceKind) -> String {
 
 fn colorize_service_padded(padded: &str, kind: ServiceKind) -> String {
     match kind {
-        ServiceKind::NextJs | ServiceKind::Vite | ServiceKind::CreateReactApp => {
+        ServiceKind::NextJs | ServiceKind::Vite | ServiceKind::CreateReactApp
+        | ServiceKind::Java | ServiceKind::DotNet | ServiceKind::Go
+        | ServiceKind::Rust | ServiceKind::Ruby => {
             padded.green().to_string()
         }
-        ServiceKind::Docker | ServiceKind::Nginx => padded.blue().to_string(),
-        ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis => {
+        ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::IIS => {
+            padded.blue().to_string()
+        }
+        ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis
+        | ServiceKind::SQLServer | ServiceKind::MongoDB => {
             padded.yellow().to_string()
         }
         ServiceKind::Unknown => padded.dimmed().to_string(),

@@ -574,7 +574,7 @@ fn scan_and_classify(scanner: &PortScanner) -> anyhow::Result<Vec<PortInfo>> {
     let mut ports = scanner.scan_all()?;
     for info in &mut ports {
         if let Some(ref proc_) = info.process {
-            info.service = Some(ServiceClassifier::classify(proc_));
+            info.service = Some(ServiceClassifier::classify_with_port(proc_, info.port));
         }
     }
     Ok(ports)
