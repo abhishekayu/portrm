@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "portrm"
+version = "2.0.0"
+description = "portrm - blazing-fast, cross-platform CLI to inspect ports, kill processes, and recover broken dev environments."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [
+    {name = "abhishekayu", email = "abhishekayu@users.noreply.github.com"},
+]
+keywords = [
+    "port",
+    "kill-port",
+    "port-conflict",
+    "developer-tools",
+    "cli",
+    "devserver",
+    "process",
+    "debug",
+    "port-scanner",
+    "dev-environment",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: System :: Networking",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://portrm.dev"
+Repository = "https://github.com/abhishekayu/portrm"
+Issues = "https://github.com/abhishekayu/portrm/issues"
+
+[project.scripts]
+ptrm = "portrm:main"
+portrm = "portrm:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

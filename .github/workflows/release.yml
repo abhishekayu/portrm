@@ -175,6 +175,11 @@ jobs:
             npx portrm
             ```
 
+            **pip**
+            ```bash
+            pip install portrm
+            ```
+
             **Manual download** -- see assets below.
           files: release-assets/*
 
@@ -341,4 +346,33 @@ jobs:
               git push
             fi
           fi
+        continue-on-error: true
+
+  publish-pip:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Update version
+        run: |
+          VERSION=${{ needs.create-release.outputs.version }}
+          cd pip
+          sed -i "s/^version = .*/version = \"${VERSION}\"/" pyproject.toml
+          sed -i "s/^VERSION = .*/VERSION = \"${VERSION}\"/" install.py
+      - name: Build package
+        run: |
+          pip install build
+          cd pip
+          python -m build
+      - name: Publish to PyPI
+        run: |
+          pip install twine
+          cd pip
+          twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         continue-on-error: true
