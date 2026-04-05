@@ -59,12 +59,12 @@ The native Rust binary (~1.2 MB) is downloaded automatically on first run. No ru
 
 ### Other installation methods
 
-| Platform            | Command                                                           |
-| ------------------- | ----------------------------------------------------------------- |
-| **curl** (fastest)  | `curl -fsSL https://raw.githubusercontent.com/abhishekayu/portrm/main/install.sh \| sh` |
-| **Homebrew**        | `brew install abhishekayu/tap/portrm`                             |
-| **Cargo**           | `cargo install portrm`                                            |
-| **npm**             | `npm install -g portrm`                                           |
+| Platform            | Command                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| **curl** (fastest)  | `curl -fsSL https://raw.githubusercontent.com/abhishekayu/portrm/main/install.sh \| sh`       |
+| **Homebrew**        | `brew install abhishekayu/tap/portrm`                                                         |
+| **Cargo**           | `cargo install portrm`                                                                        |
+| **npm**             | `npm install -g portrm`                                                                       |
 | **Scoop** (Windows) | `scoop bucket add portrm https://github.com/abhishekayu/scoop-portrm && scoop install portrm` |
 
 > **Supports** macOS (Intel + Apple Silicon), Linux (x86_64 + ARM64), and Windows.
@@ -96,35 +96,35 @@ ptrm ui
 
 ### Port Inspection & Management
 
-| Command                  | Description                                           | Example                             |
-| ------------------------ | ----------------------------------------------------- | ----------------------------------- |
-| `ptrm scan`              | List all listening ports with service, memory, uptime | `ptrm scan`                         |
-| `ptrm <port>`            | Inspect a single port in detail                       | `ptrm 3000`                         |
-| `ptrm fix <ports>`       | Safely kill the process on one or more ports          | `ptrm fix 3000 8080`                |
-| `ptrm fix <port> --run`  | Kill and auto-restart a dev server                    | `ptrm fix 3000 --run "npm run dev"` |
-| `ptrm kill <ports>`      | Direct kill with safety confirmation                  | `ptrm kill 3000 8080`               |
-| `ptrm group`             | Ports organized by role (frontend/backend/db/infra)   | `ptrm group --dev`                  |
-| `ptrm doctor`            | Find stale servers, idle processes, conflicts         | `ptrm doctor`                       |
-| `ptrm doctor -y`         | Auto-fix all safe issues                              | `ptrm doctor -y`                    |
-| `ptrm history`           | View past actions with timestamps                     | `ptrm history`                      |
-| `ptrm project`           | Detect project type, suggest dev commands             | `ptrm project`                      |
-| `ptrm ui`                | Interactive TUI with keyboard navigation              | `ptrm ui`                           |
-| `ptrm log <port>`        | Stream live logs from a port (Docker or local)        | `ptrm log 3000`                     |
+| Command                 | Description                                           | Example                             |
+| ----------------------- | ----------------------------------------------------- | ----------------------------------- |
+| `ptrm scan`             | List all listening ports with service, memory, uptime | `ptrm scan`                         |
+| `ptrm <port>`           | Inspect a single port in detail                       | `ptrm 3000`                         |
+| `ptrm fix <ports>`      | Safely kill the process on one or more ports          | `ptrm fix 3000 8080`                |
+| `ptrm fix <port> --run` | Kill and auto-restart a dev server                    | `ptrm fix 3000 --run "npm run dev"` |
+| `ptrm kill <ports>`     | Direct kill with safety confirmation                  | `ptrm kill 3000 8080`               |
+| `ptrm group`            | Ports organized by role (frontend/backend/db/infra)   | `ptrm group --dev`                  |
+| `ptrm doctor`           | Find stale servers, idle processes, conflicts         | `ptrm doctor`                       |
+| `ptrm doctor -y`        | Auto-fix all safe issues                              | `ptrm doctor -y`                    |
+| `ptrm history`          | View past actions with timestamps                     | `ptrm history`                      |
+| `ptrm project`          | Detect project type, suggest dev commands             | `ptrm project`                      |
+| `ptrm ui`               | Interactive TUI with keyboard navigation              | `ptrm ui`                           |
+| `ptrm log <port>`       | Stream live logs from a port (Docker or local)        | `ptrm log 3000`                     |
 
 ### Dev Stack Orchestration (`.ptrm.toml`)
 
-| Command                  | Description                                           | Example                |
-| ------------------------ | ----------------------------------------------------- | ---------------------- |
-| `ptrm init`              | Create `.ptrm.toml` (auto-detects ports from config)  | `ptrm init`            |
-| `ptrm up`                | Start all services from `.ptrm.toml`                  | `ptrm up`              |
-| `ptrm down`              | Stop all services from `.ptrm.toml`                   | `ptrm down`            |
-| `ptrm restart <service>` | Restart a named service                               | `ptrm restart frontend`|
-| `ptrm status`            | Show live status of all services                      | `ptrm status`          |
-| `ptrm watch <port>`      | Monitor a port, auto-restart on crash                 | `ptrm watch 3000`      |
-| `ptrm preflight`         | Check if ports are free before starting               | `ptrm preflight`       |
-| `ptrm registry check`    | Validate port assignments for conflicts               | `ptrm registry check`  |
-| `ptrm use <profile>`     | Switch between dev/staging/prod profiles              | `ptrm use staging`     |
-| `ptrm ci`                | Run all checks non-interactively (CI/CD mode)         | `ptrm ci --json`       |
+| Command                  | Description                                          | Example                 |
+| ------------------------ | ---------------------------------------------------- | ----------------------- |
+| `ptrm init`              | Create `.ptrm.toml` (auto-detects ports from config) | `ptrm init`             |
+| `ptrm up`                | Start all services from `.ptrm.toml`                 | `ptrm up`               |
+| `ptrm down`              | Stop all services from `.ptrm.toml`                  | `ptrm down`             |
+| `ptrm restart <service>` | Restart a named service                              | `ptrm restart frontend` |
+| `ptrm status`            | Show live status of all services                     | `ptrm status`           |
+| `ptrm watch <port>`      | Monitor a port, auto-restart on crash                | `ptrm watch 3000`       |
+| `ptrm preflight`         | Check if ports are free before starting              | `ptrm preflight`        |
+| `ptrm registry check`    | Validate port assignments for conflicts              | `ptrm registry check`   |
+| `ptrm use <profile>`     | Switch between dev/staging/prod profiles             | `ptrm use staging`      |
+| `ptrm ci`                | Run all checks non-interactively (CI/CD mode)        | `ptrm ci --json`        |
 
 > All commands support `--json` for scripting and CI pipelines.
 
@@ -218,7 +218,7 @@ portrm identifies 22+ service types using a 3-layer detection engine:
 
 | Verdict     | Examples                              | Behavior                                        |
 | ----------- | ------------------------------------- | ----------------------------------------------- |
-| **BLOCKED** | PID 0/1, launchd, systemd, sshd      | Refuses to kill                                 |
+| **BLOCKED** | PID 0/1, launchd, systemd, sshd       | Refuses to kill                                 |
 | **WARNING** | PostgreSQL, MySQL, Redis, Docker      | Warns about data loss, asks for confirmation    |
 | **SAFE**    | Next.js, Vite, Django, Flask, Node.js | Kills gracefully (SIGTERM first, then escalate) |
 
@@ -226,19 +226,19 @@ portrm identifies 22+ service types using a 3-layer detection engine:
 
 ## Comparison
 
-|                        | kill-port | fkill     | **portrm**                          |
-| ---------------------- | --------- | --------- | ----------------------------------- |
+|                        | kill-port | fkill     | **portrm**                             |
+| ---------------------- | --------- | --------- | -------------------------------------- |
 | Service identification | No        | Name only | Full (22+ services, confidence scores) |
-| Safety checks          | No        | No        | Yes (safe / warn / block)           |
-| Graceful shutdown      | No        | No        | Yes (SIGTERM, then escalate)        |
-| Auto-restart           | No        | No        | Yes (`--run`)                       |
-| Docker awareness       | No        | No        | Yes                                 |
-| Dev stack management   | No        | No        | Yes (`up` / `down` / `status`)      |
-| Port monitoring        | No        | No        | Yes (`watch` with auto-restart)     |
-| CI/CD mode             | No        | No        | Yes (`ci --json`)                   |
-| Interactive TUI        | No        | Yes       | Yes                                 |
-| Platform               | Node.js   | Node.js   | Native Rust binary                  |
-| Size                   | ~50 MB    | ~50 MB    | ~1.2 MB                             |
+| Safety checks          | No        | No        | Yes (safe / warn / block)              |
+| Graceful shutdown      | No        | No        | Yes (SIGTERM, then escalate)           |
+| Auto-restart           | No        | No        | Yes (`--run`)                          |
+| Docker awareness       | No        | No        | Yes                                    |
+| Dev stack management   | No        | No        | Yes (`up` / `down` / `status`)         |
+| Port monitoring        | No        | No        | Yes (`watch` with auto-restart)        |
+| CI/CD mode             | No        | No        | Yes (`ci --json`)                      |
+| Interactive TUI        | No        | Yes       | Yes                                    |
+| Platform               | Node.js   | Node.js   | Native Rust binary                     |
+| Size                   | ~50 MB    | ~50 MB    | ~1.2 MB                                |
 
 ---
 
