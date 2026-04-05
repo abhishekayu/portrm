@@ -87,12 +87,15 @@ debugging, and dev environment recovery. It identifies what's running on your po
 checks if it's safe to kill, shuts it down gracefully, and tells you how to
 restart.
 
-Works with Next.js, Vite, Django, Flask, Express, Docker, PostgreSQL, Redis, and
-more.
+Built in Rust for maximum speed (~1.2 MB binary, <50ms startup, zero runtime dependencies).
+Works with Next.js, Vite, Django, Flask, Express, Docker, PostgreSQL, Redis, MongoDB, and
+22+ service types.
 
+- [Homepage](https://portrm.dev) - official website
 - [GitHub](https://github.com/abhishekayu/portrm) - source code, docs, issues
 - [crates.io](https://crates.io/crates/portrm) - Rust package
 - [npm](https://www.npmjs.com/package/portrm) - Node.js package
+- [PyPI](https://pypi.org/project/portrm/) - Python package (`pip install portrm`)
 
 ## License
 

@@ -12,6 +12,7 @@ Built for real-world development workflows where every second counts.</p>
   <p align="center">
     <a href="https://crates.io/crates/portrm"><img src="https://img.shields.io/crates/v/portrm.svg" alt="crates.io"></a>
     <a href="https://www.npmjs.com/package/portrm"><img src="https://img.shields.io/npm/v/portrm.svg" alt="npm"></a>
+    <a href="https://pypi.org/project/portrm/"><img src="https://img.shields.io/pypi/v/portrm.svg" alt="PyPI"></a>
     <a href="https://github.com/abhishekayu/portrm/releases"><img src="https://img.shields.io/github/v/release/abhishekayu/portrm" alt="release"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
     <a href="https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli"><img src="https://img.shields.io/visual-studio-marketplace/v/abhishekayu.portrm-cli?label=VS%20Code" alt="VS Code Marketplace"></a>
@@ -117,6 +118,7 @@ curl -fsSL https://raw.githubusercontent.com/abhishekayu/portrm/main/install.sh 
 | **Homebrew**        | `brew install abhishekayu/tap/portrm`                                                         |
 | **Cargo**           | `cargo install portrm`                                                                        |
 | **npm**             | `npm install -g portrm`                                                                       |
+| **pip**             | `pip install portrm`                                                                          |
 | **Scoop** (Windows) | `scoop bucket add portrm https://github.com/abhishekayu/scoop-portrm && scoop install portrm` |
 | **Debian/Ubuntu**   | Download `.deb` from [releases](https://github.com/abhishekayu/portrm/releases)               |
 

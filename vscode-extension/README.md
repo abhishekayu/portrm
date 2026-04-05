@@ -136,6 +136,9 @@ brew install abhishekayu/tap/portrm
 # npm (cross-platform)
 npm install -g portrm
 
+# pip (cross-platform)
+pip install portrm
+
 # From source
 cargo install portrm
 ```
@@ -154,8 +157,12 @@ cargo install portrm
 
 ## Links
 
+- [Homepage](https://portrm.dev)
 - [GitHub Repository](https://github.com/abhishekayu/portrm)
 - [CLI Documentation](https://github.com/abhishekayu/portrm#readme)
+- [PyPI](https://pypi.org/project/portrm/) - `pip install portrm`
+- [npm](https://www.npmjs.com/package/portrm) - `npm install -g portrm`
+- [crates.io](https://crates.io/crates/portrm) - `cargo install portrm`
 - [Report Issues](https://github.com/abhishekayu/portrm/issues)
 
 ---
