@@ -1,6 +1,6 @@
 [package]
 name = "portrm"
-version = "1.0.5"
+version = "1.0.6"
 edition = "2024"
 description = "portrm — blazing fast port & process manager. Kill and list processes on ports from your terminal."
 license = "MIT"
