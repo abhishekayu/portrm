@@ -412,7 +412,7 @@ fn colorize_service(kind: ServiceKind) -> String {
         | ServiceKind::Rust | ServiceKind::Ruby => {
             label.green().to_string()
         }
-        ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::IIS => {
+        ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::Iis => {
             label.blue().to_string()
         }
         ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis
@@ -431,7 +431,7 @@ fn colorize_service_padded(padded: &str, kind: ServiceKind) -> String {
         | ServiceKind::Rust | ServiceKind::Ruby => {
             padded.green().to_string()
         }
-        ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::IIS => {
+        ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::Iis => {
             padded.blue().to_string()
         }
         ServiceKind::PostgreSQL | ServiceKind::MySQL | ServiceKind::Redis

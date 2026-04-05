@@ -52,7 +52,7 @@ pub fn classify_role(info: &PortInfo) -> PortRole {
             | ServiceKind::SQLServer | ServiceKind::MongoDB => {
                 return PortRole::Database;
             }
-            ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::IIS => {
+            ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::Iis => {
                 return PortRole::Infrastructure;
             }
             ServiceKind::Unknown => {}

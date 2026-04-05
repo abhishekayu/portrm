@@ -76,7 +76,7 @@ fn match_binary_exact(name: &str) -> Option<ServiceKind> {
         // Infrastructure
         "nginx" => Some(ServiceKind::Nginx),
         "httpd" | "apache2" | "apache" => Some(ServiceKind::Apache),
-        "w3wp" | "iisexpress" => Some(ServiceKind::IIS),
+        "w3wp" | "iisexpress" => Some(ServiceKind::Iis),
         "dockerd" | "docker-proxy" | "containerd" => Some(ServiceKind::Docker),
         _ => None,
     }
@@ -162,7 +162,7 @@ fn well_known_port(port: u16) -> Option<ServiceKind> {
         3306 | 3307 => Some(ServiceKind::MySQL),
         6379 | 6380 => Some(ServiceKind::Redis),
         1433 | 1434 => Some(ServiceKind::SQLServer),
-        27017 | 27018 | 27019 => Some(ServiceKind::MongoDB),
+        27017..=27019 => Some(ServiceKind::MongoDB),
         _ => None,
     }
 }

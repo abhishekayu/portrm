@@ -277,7 +277,7 @@ impl<'a> FixEngine<'a> {
 
         // Rule 4: Infrastructure services -- warn about cascading effects.
         if matches!(service_kind, Some(ServiceKind::Docker | ServiceKind::Nginx
-            | ServiceKind::Apache | ServiceKind::IIS)) {
+            | ServiceKind::Apache | ServiceKind::Iis)) {
             return SafetyVerdict::Warn {
                 reason: format!(
                     "{} manages other services -- killing it may have cascading effects",
@@ -331,7 +331,7 @@ impl<'a> FixEngine<'a> {
                 Strategy::Graceful
             }
             // Infrastructure: graceful only.
-            Some(ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::IIS) => Strategy::Graceful,
+            Some(ServiceKind::Docker | ServiceKind::Nginx | ServiceKind::Apache | ServiceKind::Iis) => Strategy::Graceful,
             // Dev servers: safe to escalate.
             Some(kind) if kind.safe_to_kill() => Strategy::Escalating,
             // Unknown: be cautious.
