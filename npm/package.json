@@ -1,6 +1,6 @@
 {
   "name": "portrm",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "portrm is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked. Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments - all from your terminal, in milliseconds. Built for real-world development workflows where every second counts.",
   "repository": {
     "type": "git",

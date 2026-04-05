@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "portrm"
-version = "2.0.0"
+version = "2.1.0"
 description = "portrm - blazing-fast, cross-platform CLI to inspect ports, kill processes, and recover broken dev environments."
 readme = "README.md"
 license = {text = "MIT"}
