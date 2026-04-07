@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { PtrmTreeProvider } from "./treeProvider";
 import { registerCommands } from "./commands";
 import { hasConfig, resetBinaryCache, formatMemory } from "./utils";
-import { ensureInstalled, checkForUpdate } from "./installer";
+import { ensureInstalled } from "./installer";
 
 const REFRESH_INTERVAL_MS = 4_000;
 
@@ -53,13 +53,8 @@ export function activate(context: vscode.ExtensionContext): void {
   // Initial load (fire-and-forget with error handling)
   doRefresh();
 
-  // Check if ptrm CLI is installed; prompt to install if not
-  ensureInstalled().then((ok) => {
-    if (ok) {
-      // Check for updates after a short delay (don't block activation)
-      setTimeout(() => checkForUpdate(), 10_000);
-    }
-  });
+  // One-time CLI presence check (no install, no update loop)
+  ensureInstalled(context);
 
   // Auto-refresh
   refreshTimer = setInterval(() => doRefresh(), REFRESH_INTERVAL_MS);

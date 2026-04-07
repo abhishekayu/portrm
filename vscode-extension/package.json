@@ -2,7 +2,7 @@
   "name": "portrm-cli",
   "displayName": "Portrm CLI",
   "description": "Manage ports and processes without leaving your editor. Portrm brings blazing-fast port scanning, one-click process killing, and service restarts directly into VS Code - powered by the portrm CLI.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "publisher": "abhishekayu",
   "license": "MIT",
   "icon": "resources/ptrm-icon-128.png",
@@ -50,7 +50,7 @@
     "dev-tools"
   ],
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -290,7 +290,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "package": "npm run compile && npx @vscode/vsce package --allow-star-activation",
+    "package": "npm run compile && npx @vscode/vsce package",
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {

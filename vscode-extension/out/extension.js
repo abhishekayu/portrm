@@ -78,13 +78,8 @@ function activate(context) {
     statusBarItem.show();
     // Initial load (fire-and-forget with error handling)
     doRefresh();
-    // Check if ptrm CLI is installed; prompt to install if not
-    (0, installer_1.ensureInstalled)().then((ok) => {
-        if (ok) {
-            // Check for updates after a short delay (don't block activation)
-            setTimeout(() => (0, installer_1.checkForUpdate)(), 10000);
-        }
-    });
+    // One-time CLI presence check (no install, no update loop)
+    (0, installer_1.ensureInstalled)(context);
     // Auto-refresh
     refreshTimer = setInterval(() => doRefresh(), REFRESH_INTERVAL_MS);
     context.subscriptions.push({ dispose: () => clearInterval(refreshTimer) });

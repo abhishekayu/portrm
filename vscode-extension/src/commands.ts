@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { runPtrm, runInTerminal, getOutputChannel, hasConfig, getWorkspaceRoot } from "./utils";
 import { PtrmTreeProvider } from "./treeProvider";
-import { checkForUpdate, installOrUpdate, getLatestVersion } from "./installer";
 
 // ── Command handlers ───────────────────────────────────────────────
 
@@ -371,12 +370,5 @@ async function cmdResetProfile(refreshFn: () => Promise<void>): Promise<void> {
 // ── Update CLI ─────────────────────────────────────────────────────
 
 async function cmdUpdate(): Promise<void> {
-  try {
-    const latest = await getLatestVersion();
-    const binPath = await installOrUpdate(latest);
-    vscode.window.showInformationMessage(`Ptrm: Updated to v${latest} at ${binPath}`);
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    vscode.window.showErrorMessage(`Ptrm: Update failed - ${msg}`);
-  }
+  runInTerminal("ptrm update", "ptrm update");
 }

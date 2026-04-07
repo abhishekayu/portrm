@@ -53,12 +53,16 @@ export function getOutputChannel(): vscode.OutputChannel {
   return _outputChannel;
 }
 
-/** Resolve the ptrm binary path. Checks common locations on macOS/Linux. */
+/** Resolve the ptrm binary path. Checks common locations across platforms. */
 let _resolvedBinary: string | undefined;
-function resolvePtrm(): string {
+export function resolvePtrm(): string {
   if (_resolvedBinary) {
     return _resolvedBinary;
   }
+  const isWin = os.platform() === "win32";
+  const ext = isWin ? ".exe" : "";
+  const bin = `ptrm${ext}`;
+
   // Check VS Code setting first
   const configured = vscode.workspace.getConfiguration("ptrm").get<string>("binaryPath");
   if (configured && configured !== "ptrm") {
@@ -67,18 +71,40 @@ function resolvePtrm(): string {
       return configured;
     }
   }
-  // Check common install locations (Extension Host may have limited PATH)
-  const candidates = [
-    "/usr/local/bin/ptrm",
-    path.join(os.homedir(), ".cargo/bin/ptrm"),
-    "/opt/homebrew/bin/ptrm",
-    "/usr/bin/ptrm",
-  ];
-  // Also check workspace target/release
+
+  const candidates: string[] = [];
+
+  // Workspace target/release (dev builds)
   const root = getWorkspaceRoot();
   if (root) {
-    candidates.unshift(path.join(root, "target/release/ptrm"));
+    candidates.push(path.join(root, "target", "release", bin));
   }
+
+  if (isWin) {
+    // Windows install locations
+    const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local");
+    candidates.push(
+      path.join(os.homedir(), ".cargo", "bin", bin),
+      path.join(appData, "portrm", bin),
+      path.join(process.env.ProgramFiles ?? "C:\\Program Files", "portrm", bin),
+    );
+    // npm global (typically on PATH, but check explicitly)
+    const npmPrefix = process.env.APPDATA
+      ? path.join(process.env.APPDATA, "npm", bin)
+      : path.join(os.homedir(), "AppData", "Roaming", "npm", bin);
+    candidates.push(npmPrefix);
+    // scoop
+    candidates.push(path.join(os.homedir(), "scoop", "shims", bin));
+  } else {
+    // macOS / Linux
+    candidates.push(
+      "/usr/local/bin/ptrm",
+      path.join(os.homedir(), ".cargo/bin/ptrm"),
+      "/opt/homebrew/bin/ptrm",
+      "/usr/bin/ptrm",
+    );
+  }
+
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) {
       _resolvedBinary = candidate;
@@ -87,7 +113,7 @@ function resolvePtrm(): string {
     }
   }
   // Fallback to bare name (rely on PATH)
-  return "ptrm";
+  return bin;
 }
 
 /** Reset cached binary path (e.g. after settings change). */
@@ -156,20 +182,25 @@ export function runInTerminal(_label: string, command: string): vscode.Terminal 
   const terminal = getSharedTerminal();
   terminal.show();
 
+  // Replace bare "ptrm" with resolved binary path so terminal commands
+  // work even when ptrm is not on the system PATH (e.g. target/release/ptrm).
+  const bin = resolvePtrm();
+  const resolved = command.replace(/\bptrm\b/g, bin);
+
   if (_terminalMode === "interactive") {
     // Exit TUI with "q", then run new command after a short delay
     terminal.sendText("q", true);
     setTimeout(() => {
-      terminal.sendText(command);
+      terminal.sendText(resolved);
     }, 500);
   } else if (_terminalMode === "busy") {
     // Interrupt current command (Ctrl+C), then run new command
     terminal.sendText("\x03", false); // Ctrl+C
     setTimeout(() => {
-      terminal.sendText(command);
+      terminal.sendText(resolved);
     }, 300);
   } else {
-    terminal.sendText(command);
+    terminal.sendText(resolved);
   }
 
   // Track mode based on command

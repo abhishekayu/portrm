@@ -10,7 +10,7 @@ import tarfile
 import urllib.request
 import zipfile
 
-VERSION = "2.1.0"
+VERSION = "2.2.0"
 REPO = "abhishekayu/portrm"
 
 
@@ -76,6 +76,16 @@ def _ensure_binary():
 
 def main():
     """Entry point that delegates to the native ptrm binary."""
+    from portrm.conflict import run_conflict_check, run_doctor
+
+    # Handle `portrm doctor` / `ptrm doctor` at the Python level
+    # so it works even when the native binary is missing or broken.
+    if len(sys.argv) >= 2 and sys.argv[1] == "doctor":
+        run_doctor()
+        return
+
+    run_conflict_check()
+
     binary = _ensure_binary()
     try:
         result = subprocess.run([binary] + sys.argv[1:])

@@ -36,7 +36,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerCommands = registerCommands;
 const vscode = __importStar(require("vscode"));
 const utils_1 = require("./utils");
-const installer_1 = require("./installer");
 // ── Command handlers ───────────────────────────────────────────────
 function registerCommands(context, provider, refreshFn) {
     context.subscriptions.push(vscode.commands.registerCommand("ptrm.refresh", refreshFn), vscode.commands.registerCommand("ptrm.restart", (item) => cmdRestart(item, refreshFn)), vscode.commands.registerCommand("ptrm.logs", (item) => cmdLogs(item)), vscode.commands.registerCommand("ptrm.kill", (item) => cmdKill(item, refreshFn)), vscode.commands.registerCommand("ptrm.fix", () => cmdFix(refreshFn)), vscode.commands.registerCommand("ptrm.up", () => cmdUp(refreshFn)), vscode.commands.registerCommand("ptrm.down", () => cmdDown(refreshFn)), vscode.commands.registerCommand("ptrm.init", () => cmdInit(refreshFn)), vscode.commands.registerCommand("ptrm.info", (item) => cmdInfo(item)), vscode.commands.registerCommand("ptrm.doctor", () => cmdDoctor(refreshFn)), vscode.commands.registerCommand("ptrm.watch", (item) => cmdWatch(item)), vscode.commands.registerCommand("ptrm.preflight", () => cmdPreflight()), vscode.commands.registerCommand("ptrm.interactive", () => cmdInteractive()), vscode.commands.registerCommand("ptrm.group", () => cmdGroup()), vscode.commands.registerCommand("ptrm.history", () => cmdHistory()), vscode.commands.registerCommand("ptrm.scanDev", () => cmdScanDev()), vscode.commands.registerCommand("ptrm.registry", () => cmdRegistry()), vscode.commands.registerCommand("ptrm.ci", () => cmdCi()), vscode.commands.registerCommand("ptrm.useProfile", () => cmdUseProfile(refreshFn)), vscode.commands.registerCommand("ptrm.update", () => cmdUpdate()), vscode.commands.registerCommand("ptrm.resetProfile", () => cmdResetProfile(refreshFn)));
@@ -301,14 +300,6 @@ async function cmdResetProfile(refreshFn) {
 }
 // ── Update CLI ─────────────────────────────────────────────────────
 async function cmdUpdate() {
-    try {
-        const latest = await (0, installer_1.getLatestVersion)();
-        const binPath = await (0, installer_1.installOrUpdate)(latest);
-        vscode.window.showInformationMessage(`Ptrm: Updated to v${latest} at ${binPath}`);
-    }
-    catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        vscode.window.showErrorMessage(`Ptrm: Update failed - ${msg}`);
-    }
+    (0, utils_1.runInTerminal)("ptrm update", "ptrm update");
 }
 //# sourceMappingURL=commands.js.map

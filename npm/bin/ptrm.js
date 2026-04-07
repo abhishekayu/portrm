@@ -5,6 +5,9 @@
 const { execFileSync } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const { runConflictCheck } = require("./conflict");
+
+runConflictCheck();
 
 const binDir = path.join(__dirname);
 
