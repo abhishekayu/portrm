@@ -39,7 +39,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build --release
       - name: Run test suite
-        run: bash test.sh
+        run: bash tests/test.sh
 
   conflict-detection:
     name: Conflict Detection Tests
@@ -59,9 +59,9 @@ jobs:
       - name: Build release binary
         run: cargo build --release
       - name: Python conflict tests
-        run: python3 test_conflict.py
+        run: python3 tests/test_conflict.py
       - name: Python cross-platform tests
-        run: python3 test_cross_platform.py
+        run: python3 tests/test_cross_platform.py
       - name: Python syntax check (conflict.py)
         run: python3 -c "import ast; ast.parse(open('pip/src/portrm/conflict.py').read()); print('OK')"
       - name: Python syntax check (update.py)
