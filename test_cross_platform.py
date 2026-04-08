@@ -117,7 +117,7 @@ def test_detect_source_all_os():
     check("cargo (macOS)",                  detect_source("/Users/john/.cargo/bin/ptrm") == "cargo")
     check("pip (macOS .local)",             detect_source("/Users/john/.local/bin/portrm") in ("pip", "script"))
     check("pip (macOS site-packages)",      detect_source("/Users/john/Library/Python/3.10/lib/python/site-packages/portrm/bin/ptrm") == "pip")
-    check("npm (macOS node_modules)",       detect_source("/Users/john/node_modules/.bin/portrm") == "npm")
+    check("npm (macOS node_modules)",       detect_source("/Users/john/node_modules/.bin/portrm") == "npm-local")
     check("npm (macOS global)",             detect_source("/usr/local/lib/node_modules/portrm/bin/ptrm") == "npm")
 
     # Linux paths
@@ -126,7 +126,7 @@ def test_detect_source_all_os():
     check("cargo (Linux)",                  detect_source("/home/user/.cargo/bin/ptrm") == "cargo")
     check("pip (Linux .local)",             detect_source("/home/user/.local/bin/portrm") in ("pip", "script"))
     check("pip (Linux site-packages)",      detect_source("/usr/lib/python3/dist-packages/site-packages/portrm") == "pip")
-    check("npm (Linux node_modules)",       detect_source("/home/user/node_modules/.bin/portrm") == "npm")
+    check("npm (Linux node_modules)",       detect_source("/home/user/node_modules/.bin/portrm") == "npm-local")
     check("npm (Linux global /npm/)",       detect_source("/usr/lib/npm/bin/portrm") == "npm")
 
     # Windows paths (backslash style)
@@ -135,8 +135,8 @@ def test_detect_source_all_os():
     check("pip (Windows .local)",           detect_source("C:\\Users\\john\\.local\\bin\\portrm.exe") in ("pip", "script"))
     check("pip (Windows Python)",           detect_source("C:\\Users\\john\\AppData\\Local\\Programs\\Python\\Python310\\Scripts\\portrm.exe") == "pip")
     check("npm (Windows AppData)",          detect_source("C:\\Users\\john\\AppData\\Roaming\\npm\\portrm.cmd") == "npm")
-    check("npm (Windows node_modules)",     detect_source("C:\\Users\\john\\node_modules\\.bin\\portrm.cmd") == "npm")
-    check("npm (Windows npx)",             detect_source("C:\\Users\\john\\AppData\\Local\\npm-cache\\_npx\\abc123\\node_modules\\.bin\\ptrm.cmd") == "npm")
+    check("npm (Windows node_modules)",     detect_source("C:\\Users\\john\\node_modules\\.bin\\portrm.cmd") == "npm-local")
+    check("npm (Windows npx)",             detect_source("C:\\Users\\john\\AppData\\Local\\npm-cache\\_npx\\abc123\\node_modules\\.bin\\ptrm.cmd") == "npm-local")
 
     # Unknown
     _section("Unknown / edge cases")
@@ -217,17 +217,17 @@ def test_conflict_detection_per_os():
     os_configs = {
         "macOS": {
             "dirs": {
-                "brew":  "opt/homebrew/bin",
-                "pip":   ".local/bin",
-                "cargo": ".cargo/bin",
-                "npm":   "node_modules/.bin",
+                "brew":      "opt/homebrew/bin",
+                "pip":       ".local/bin",
+                "cargo":     ".cargo/bin",
+                "npm-local": "node_modules/.bin",
             },
         },
         "Linux": {
             "dirs": {
-                "pip":   ".local/bin",
-                "cargo": ".cargo/bin",
-                "npm":   "node_modules/.bin",
+                "pip":       ".local/bin",
+                "cargo":     ".cargo/bin",
+                "npm-local": "node_modules/.bin",
             },
         },
         "Windows": {
@@ -647,7 +647,7 @@ def test_nodejs_conflict():
         check("Node: pip (Linux)",                  sources["pip_linux"] in ("pip", "script"))
         check("Node: npm (Windows AppData)",        sources["npm_win"] == "npm")
         check("Node: cargo (Windows)",              sources["cargo_win"] == "cargo")
-        check("Node: npm (npx path)",               sources["npm_npx"] == "npm")
+        check("Node: npm (npx path)",               sources["npm_npx"] == "npm-local")
         check("Node: has recommended install",      len(suggest["recommended"]) > 0)
         check("Node: has alternatives",             isinstance(suggest["alternatives"], list))
 

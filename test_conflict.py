@@ -94,10 +94,10 @@ def divider() -> None:
 
 SOURCES = {
     # name -> (subdirectory pattern that triggers detect_source)
-    "npm":   "node_modules/.bin",
-    "pip":   ".local/bin",
-    "cargo": ".cargo/bin",
-    "brew":  "homebrew/bin",
+    "npm-local": "node_modules/.bin",
+    "pip":       ".local/bin",
+    "cargo":     ".cargo/bin",
+    "brew":      "homebrew/bin",
 }
 
 
@@ -212,13 +212,13 @@ def test_uninstall_commands() -> bool:
     """Verify uninstall command generation."""
     from portrm.conflict import get_uninstall_commands
 
-    sources = ["brew", "pip", "cargo", "npm"]
+    sources = ["brew", "pip", "cargo", "npm-local"]
     cmds = get_uninstall_commands(sources)
     expected = [
         "brew uninstall portrm",
         "pip uninstall portrm",
         "cargo uninstall portrm",
-        "npm uninstall -g portrm",
+        "npm uninstall portrm",
     ]
     if cmds == expected:
         ok(f"Uninstall commands: {len(cmds)} commands generated correctly")
