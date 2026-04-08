@@ -2,7 +2,7 @@
   "name": "portrm-cli",
   "displayName": "Portrm CLI",
   "description": "Manage ports and processes without leaving your editor. Portrm brings blazing-fast port scanning, one-click process killing, and service restarts directly into VS Code - powered by the portrm CLI.",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "publisher": "abhishekayu",
   "license": "MIT",
   "icon": "resources/ptrm-icon-128.png",
