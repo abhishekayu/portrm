@@ -3,6 +3,7 @@ mod ci;
 mod classifier;
 mod completions;
 mod config;
+mod conflict;
 mod crash;
 mod docker;
 mod doctor;
@@ -37,6 +38,11 @@ use engine::{FixEngine, Strategy};
 use scanner::PortScanner;
 
 fn main() -> anyhow::Result<()> {
+    // Check for conflicting installations before doing anything else
+    if conflict::check() {
+        std::process::exit(1);
+    }
+
     let cli = Cli::parse();
     let adapter = platform::adapter();
 
