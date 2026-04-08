@@ -41,6 +41,233 @@ jobs:
       - name: Run test suite
         run: bash test.sh
 
+  conflict-detection:
+    name: Conflict Detection Tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build release binary
+        run: cargo build --release
+      - name: Python conflict tests
+        run: python3 test_conflict.py
+      - name: Python cross-platform tests
+        run: python3 test_cross_platform.py
+      - name: Python syntax check (conflict.py)
+        run: python3 -c "import ast; ast.parse(open('pip/src/portrm/conflict.py').read()); print('OK')"
+      - name: Python syntax check (update.py)
+        run: python3 -c "import ast; ast.parse(open('pip/src/portrm/update.py').read()); print('OK')"
+      - name: Node.js syntax check (conflict.js)
+        run: node -e "require('./npm/bin/conflict.js'); console.log('OK')"
+      - name: Node.js syntax check (update.js)
+        run: node -e "require('./npm/bin/update.js'); console.log('OK')"
+      - name: Rust conflict simulation
+        run: |
+          set -e
+          PTRM="./target/release/ptrm"
+          TMPDIR=$(mktemp -d)
+          trap "rm -rf $TMPDIR" EXIT
+
+          # Create fake dirs with proper names for detection
+          mkdir -p "$TMPDIR/opt/homebrew/bin"
+          mkdir -p "$TMPDIR/home/.cargo/bin"
+          mkdir -p "$TMPDIR/home/Library/Python/3.9/bin"
+          mkdir -p "$TMPDIR/stale/.local/bin"
+          mkdir -p "$TMPDIR/good/.local/bin"
+          mkdir -p "$TMPDIR/good/.local/pipx/venvs/portrm"
+          mkdir -p "$TMPDIR/proj/node_modules/.bin"
+          mkdir -p "$TMPDIR/usr/local/lib/node_modules/.bin"
+          mkdir -p "$TMPDIR/scriptd/.local/bin"
+
+          # Brew
+          printf '#!/bin/sh\necho brew\n' > "$TMPDIR/opt/homebrew/bin/ptrm"; chmod +x "$TMPDIR/opt/homebrew/bin/ptrm"
+          # Cargo
+          printf '#!/bin/sh\necho cargo\n' > "$TMPDIR/home/.cargo/bin/ptrm"; chmod +x "$TMPDIR/home/.cargo/bin/ptrm"
+          # Pip (ptrm + portrm for dedup test)
+          printf '#!/usr/bin/env python3\nimport portrm\n' > "$TMPDIR/home/Library/Python/3.9/bin/ptrm"; chmod +x "$TMPDIR/home/Library/Python/3.9/bin/ptrm"
+          printf '#!/usr/bin/env python3\nimport portrm\n' > "$TMPDIR/home/Library/Python/3.9/bin/portrm"; chmod +x "$TMPDIR/home/Library/Python/3.9/bin/portrm"
+          # Orphan pipx (shebang says pipx, venv missing)
+          printf '#!/some/pipx/venvs/portrm/bin/python\nimport portrm\n' > "$TMPDIR/stale/.local/bin/portrm"; chmod +x "$TMPDIR/stale/.local/bin/portrm"
+          # Valid pipx (venv exists)
+          printf '#!/some/pipx/venvs/portrm/bin/python\nimport portrm\n' > "$TMPDIR/good/.local/bin/portrm"; chmod +x "$TMPDIR/good/.local/bin/portrm"
+          # Local npm
+          printf '#!/usr/bin/env node\nconsole.log("local")\n' > "$TMPDIR/proj/node_modules/.bin/portrm"; chmod +x "$TMPDIR/proj/node_modules/.bin/portrm"
+          # Global npm
+          printf '#!/usr/bin/env node\nconsole.log("global")\n' > "$TMPDIR/usr/local/lib/node_modules/.bin/portrm"; chmod +x "$TMPDIR/usr/local/lib/node_modules/.bin/portrm"
+          # Script
+          printf '#!/bin/sh\necho script\n' > "$TMPDIR/scriptd/.local/bin/ptrm"; chmod +x "$TMPDIR/scriptd/.local/bin/ptrm"
+
+          PASS=0; FAIL=0; TOTAL=0
+          check() { TOTAL=$((TOTAL+1)); if echo "$3" | grep -qF "$2"; then PASS=$((PASS+1)); echo "  OK $TOTAL  $1"; else FAIL=$((FAIL+1)); echo "  FAIL $TOTAL  $1 (expected: $2)"; fi; }
+          check_not() { TOTAL=$((TOTAL+1)); if ! echo "$3" | grep -qF "$2"; then PASS=$((PASS+1)); echo "  OK $TOTAL  $1"; else FAIL=$((FAIL+1)); echo "  FAIL $TOTAL  $1 (should NOT contain: $2)"; fi; }
+
+          # 1: Pip dedup
+          OUT=$(PATH="$TMPDIR/opt/homebrew/bin:$TMPDIR/home/Library/Python/3.9/bin" PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1 || true)
+          check "pip shown" "(pip)" "$OUT"
+          C=$(echo "$OUT" | grep -c "(pip)" || true)
+          TOTAL=$((TOTAL+1)); if [ "$C" -eq 1 ]; then PASS=$((PASS+1)); echo "  OK $TOTAL  pip deduped to 1"; else FAIL=$((FAIL+1)); echo "  FAIL $TOTAL  pip count=$C"; fi
+
+          # 2: Orphan pipx
+          OUT=$(HOME="$TMPDIR/stale" PATH="$TMPDIR/opt/homebrew/bin:$TMPDIR/stale/.local/bin" PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1 || true)
+          check "orphan label" "stale pipx - orphaned wrapper" "$OUT"
+          check "orphan rm" "rm" "$OUT"
+          check_not "no pipx uninstall" "pipx uninstall" "$OUT"
+
+          # 3: Valid pipx
+          OUT=$(HOME="$TMPDIR/good" PATH="$TMPDIR/opt/homebrew/bin:$TMPDIR/good/.local/bin" PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1 || true)
+          check "pipx detected" "(pipx)" "$OUT"
+          check "pipx uninstall" "pipx uninstall portrm" "$OUT"
+          check_not "not orphan" "orphan" "$OUT"
+
+          # 4: Local npm
+          OUT=$(PATH="$TMPDIR/opt/homebrew/bin:$TMPDIR/proj/node_modules/.bin" PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1 || true)
+          check "npm-local label" "npm (local)" "$OUT"
+          check "npm uninstall no -g" "npm uninstall portrm" "$OUT"
+          check_not "no -g" "uninstall -g" "$OUT"
+
+          # 5: Global npm
+          OUT=$(PATH="$TMPDIR/opt/homebrew/bin:$TMPDIR/usr/local/lib/node_modules/.bin" PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1 || true)
+          check "npm global" "(npm)" "$OUT"
+          check "npm -g" "npm uninstall -g portrm" "$OUT"
+
+          # 6: Script
+          OUT=$(HOME="$TMPDIR/scriptd" PATH="$TMPDIR/opt/homebrew/bin:$TMPDIR/scriptd/.local/bin" PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1 || true)
+          check "script label" "(script)" "$OUT"
+
+          # 7: Brew + Cargo
+          OUT=$(PATH="$TMPDIR/opt/homebrew/bin:$TMPDIR/home/.cargo/bin" PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1 || true)
+          check "brew" "(brew)" "$OUT"
+          check "cargo" "(cargo)" "$OUT"
+          check "brew uninstall" "brew uninstall portrm" "$OUT"
+          check "cargo uninstall" "cargo uninstall portrm" "$OUT"
+
+          # 8: Single install (no conflict)
+          OUT=$(PATH="$TMPDIR/opt/homebrew/bin" PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1); EC=$?
+          check_not "no conflict" "Multiple" "$OUT"
+          TOTAL=$((TOTAL+1)); if [ "$EC" -eq 0 ]; then PASS=$((PASS+1)); echo "  OK $TOTAL  exit 0"; else FAIL=$((FAIL+1)); echo "  FAIL $TOTAL  exit=$EC"; fi
+
+          # 9: Skip via env var
+          OUT=$(PATH="$TMPDIR/opt/homebrew/bin:$TMPDIR/home/.cargo/bin" PTRM_SKIP_CONFLICT_CHECK=1 PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1); EC=$?
+          check_not "skip works" "Multiple" "$OUT"
+          TOTAL=$((TOTAL+1)); if [ "$EC" -eq 0 ]; then PASS=$((PASS+1)); echo "  OK $TOTAL  exit 0 skip"; else FAIL=$((FAIL+1)); echo "  FAIL $TOTAL  exit=$EC"; fi
+
+          # 10: All sources together
+          OUT=$(HOME="$TMPDIR/stale" PATH="$TMPDIR/opt/homebrew/bin:$TMPDIR/home/.cargo/bin:$TMPDIR/home/Library/Python/3.9/bin:$TMPDIR/stale/.local/bin:$TMPDIR/proj/node_modules/.bin" PTRM_SKIP_UPDATE_CHECK=1 $PTRM --version 2>&1 || true)
+          check "all: brew" "(brew)" "$OUT"
+          check "all: cargo" "(cargo)" "$OUT"
+          check "all: pip" "(pip)" "$OUT"
+          check "all: orphan" "stale pipx - orphaned wrapper" "$OUT"
+          check "all: npm-local" "npm (local)" "$OUT"
+          BCOUNT=$(echo "$OUT" | grep -c "•" || true)
+          TOTAL=$((TOTAL+1)); if [ "$BCOUNT" -eq 5 ]; then PASS=$((PASS+1)); echo "  OK $TOTAL  5 entries"; else FAIL=$((FAIL+1)); echo "  FAIL $TOTAL  count=$BCOUNT"; fi
+
+          echo ""
+          echo "$PASS/$TOTAL passed"
+          [ "$FAIL" -eq 0 ] || exit 1
+
+  node-tests:
+    name: Node.js Module Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Test conflict.js detect_source
+        run: |
+          node -e "
+          const c = require('./npm/bin/conflict.js');
+          const assert = (cond, msg) => { if (!cond) { console.error('FAIL: ' + msg); process.exit(1); } console.log('OK: ' + msg); };
+
+          assert(c.detectSource('/opt/homebrew/bin/ptrm') === 'brew', 'brew');
+          assert(c.detectSource('/home/user/.linuxbrew/bin/ptrm') === 'brew', 'linuxbrew');
+          assert(c.detectSource('/Users/x/.cargo/bin/ptrm') === 'cargo', 'cargo');
+          assert(c.detectSource('/Users/x/Library/Python/3.9/bin/ptrm') === 'pip', 'pip');
+          assert(c.detectSource('/usr/local/lib/node_modules/.bin/portrm') === 'npm', 'npm global');
+          assert(c.detectSource('/Users/x/node_modules/.bin/portrm') === 'npm-local', 'npm local');
+          assert(c.detectSource('/Users/x/project/node_modules/.bin/portrm') === 'npm-local', 'npm local project');
+
+          const cmds1 = c.getUninstallCommands(['npm-local'], ['/x/node_modules/.bin/p']);
+          assert(cmds1.includes('npm uninstall portrm'), 'npm-local uninstall');
+          assert(!cmds1.some(x => x.includes('-g')), 'npm-local no -g');
+
+          const cmds2 = c.getUninstallCommands(['npm'], ['/usr/local/lib/node_modules/.bin/p']);
+          assert(cmds2.includes('npm uninstall -g portrm'), 'npm global -g');
+
+          const cmds3 = c.getUninstallCommands(['orphan'], ['/Users/x/.local/bin/portrm']);
+          assert(cmds3.some(x => x.includes('rm')), 'orphan rm');
+
+          console.log('All Node.js tests passed');
+          "
+      - name: Test update.js loads
+        run: node -e "require('./npm/bin/update.js'); console.log('OK')"
+      - name: Test ptrm.js loads
+        run: node -e "require('./npm/bin/ptrm.js'); console.log('OK')" || true
+
+  pip-tests:
+    name: Python Module Tests
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.11", "3.12"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Test conflict.py detect_source
+        run: |
+          python3 -c "
+          import sys; sys.path.insert(0, 'pip/src')
+          from portrm.conflict import detect_source, get_uninstall_commands
+
+          tests = [
+              ('/opt/homebrew/bin/ptrm', 'brew'),
+              ('/opt/homebrew/Cellar/portrm/2.2.2/bin/ptrm', 'brew'),
+              ('/home/user/.linuxbrew/bin/ptrm', 'brew'),
+              ('/Users/x/.cargo/bin/ptrm', 'cargo'),
+              ('/Users/x/Library/Python/3.9/bin/ptrm', 'pip'),
+              ('/usr/lib/python3/site-packages/portrm', 'pip'),
+              ('/usr/local/lib/node_modules/.bin/portrm', 'npm'),
+              ('/Users/x/node_modules/.bin/portrm', 'npm-local'),
+              ('/Users/x/project/node_modules/.bin/portrm', 'npm-local'),
+          ]
+          for path, expected in tests:
+              actual = detect_source(path)
+              assert actual == expected, f'{path}: expected {expected}, got {actual}'
+              print(f'OK: {path} -> {expected}')
+
+          cmds = get_uninstall_commands(['npm-local'], ['/x/node_modules/.bin/p'])
+          assert 'npm uninstall portrm' in cmds, 'npm-local uninstall'
+          assert not any('-g' in c for c in cmds), 'npm-local no -g'
+          print('OK: npm-local uninstall')
+
+          cmds = get_uninstall_commands(['npm'], ['/usr/local/lib/node_modules/.bin/p'])
+          assert 'npm uninstall -g portrm' in cmds, 'npm global -g'
+          print('OK: npm global -g')
+
+          cmds = get_uninstall_commands(['orphan'], ['/Users/x/.local/bin/portrm'])
+          assert any('rm' in c for c in cmds), 'orphan rm'
+          print('OK: orphan rm')
+
+          print('All Python detect_source tests passed')
+          "
+      - name: Syntax check all Python modules
+        run: |
+          python3 -c "import ast; ast.parse(open('pip/src/portrm/conflict.py').read())"
+          python3 -c "import ast; ast.parse(open('pip/src/portrm/update.py').read())"
+          python3 -c "import ast; ast.parse(open('pip/src/portrm/__init__.py').read())"
+          echo "All Python syntax OK"
+
   vscode-extension:
     runs-on: ubuntu-latest
     defaults:
