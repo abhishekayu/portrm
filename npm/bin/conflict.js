@@ -29,12 +29,22 @@ const SOURCE_PATTERNS = [
     label: "brew",
   },
   { patterns: [".cargo/bin"], label: "cargo" },
-  { patterns: ["site-packages", ".local", "python", "Python"], label: "pip" },
+  { patterns: ["site-packages", "python", "Python"], label: "pip" },
   {
     patterns: ["node_modules", "/npm/", "/npx/", "AppData/Roaming/npm", "_npx"],
     label: "npm",
   },
 ];
+
+function isPythonScript(binPath) {
+  try {
+    const fs = require("fs");
+    const head = fs.readFileSync(binPath, { encoding: "utf8", flag: "r" }).slice(0, 256);
+    return head.startsWith("#!") && head.toLowerCase().includes("python");
+  } catch {
+    return false;
+  }
+}
 
 function detectSource(binPath) {
   const normalised = binPath.replace(/\\/g, "/").toLowerCase();
@@ -44,6 +54,18 @@ function detectSource(binPath) {
         return label;
       }
     }
+  }
+  // ~/.local can be pip, pipx, or install.sh
+  if (normalised.includes(".local")) {
+    if (isPythonScript(binPath)) {
+      try {
+        const fs = require("fs");
+        const head = fs.readFileSync(binPath, "utf8").slice(0, 256);
+        if (head.includes("pipx")) return "pipx";
+      } catch { /* ignore */ }
+      return "pip";
+    }
+    return "script";
   }
   return "unknown";
 }
@@ -119,11 +141,12 @@ function findAllBinaries() {
 const UNINSTALL_CMD = {
   brew: "brew uninstall portrm",
   pip: "pip uninstall portrm",
+  pipx: "pipx uninstall portrm",
   cargo: "cargo uninstall portrm",
   npm: "npm uninstall -g portrm",
 };
 
-function getUninstallCommands(sources) {
+function getUninstallCommands(sources, binaries) {
   const seen = new Set();
   const cmds = [];
   for (const src of sources) {
@@ -131,6 +154,19 @@ function getUninstallCommands(sources) {
     if (cmd && !seen.has(cmd)) {
       seen.add(cmd);
       cmds.push(cmd);
+    }
+  }
+  // For "script" (install.sh) installs, suggest rm with the path
+  if (binaries) {
+    for (let i = 0; i < sources.length; i++) {
+      if (sources[i] === "script") {
+        const display = binaries[i].replace(os.homedir(), "~");
+        const cmd = `rm ${display}`;
+        if (!seen.has(cmd)) {
+          seen.add(cmd);
+          cmds.push(cmd);
+        }
+      }
     }
   }
   return cmds;
@@ -206,7 +242,7 @@ function printConflict(binaries, sources, uniqueSources) {
   }
   w("\n");
 
-  const uninstallCmds = getUninstallCommands(uniqueSources);
+  const uninstallCmds = getUninstallCommands(uniqueSources, binaries);
   if (uninstallCmds.length) {
     w(`  ${bold("Uninstall duplicates:")}\n`);
     w("\n");

@@ -11,6 +11,17 @@ struct Installation {
     source: &'static str,
 }
 
+/// Check whether a file starts with a `#!` shebang referencing Python.
+fn is_python_script(path: &Path) -> bool {
+    std::fs::read(path)
+        .ok()
+        .map(|bytes| {
+            let head: String = bytes.iter().take(256).map(|&b| b as char).collect();
+            head.starts_with("#!") && head.to_lowercase().contains("python")
+        })
+        .unwrap_or(false)
+}
+
 /// Detect which package manager installed a binary based on its path.
 fn detect_source(path: &Path) -> &'static str {
     let s = path.to_string_lossy().replace('\\', "/").to_lowercase();
@@ -22,13 +33,26 @@ fn detect_source(path: &Path) -> &'static str {
     if s.contains(".cargo/bin") {
         return "cargo";
     }
-    if s.contains("site-packages") || s.contains(".local") || s.contains("python") {
-        return "pip";
-    }
     if s.contains("node_modules") || s.contains("/npm/") || s.contains("/npx/") || s.contains("_npx")
         || s.contains("appdata/roaming/npm")
     {
         return "npm";
+    }
+    if s.contains("site-packages") || s.contains("python") {
+        return "pip";
+    }
+    // ~/.local/bin could be pip, pipx, or install.sh — inspect the file
+    if s.contains(".local") {
+        if is_python_script(path) {
+            // Check if it's specifically a pipx venv
+            let head = std::fs::read_to_string(path).unwrap_or_default();
+            if head.contains("pipx") {
+                return "pipx";
+            }
+            return "pip";
+        }
+        // Compiled binary in ~/.local/bin → from install.sh
+        return "script";
     }
     "unknown"
 }
@@ -133,21 +157,32 @@ pub fn check() -> bool {
     let uninstall: BTreeMap<&str, &str> = [
         ("brew", "brew uninstall portrm"),
         ("pip", "pip uninstall portrm"),
+        ("pipx", "pipx uninstall portrm"),
         ("cargo", "cargo uninstall portrm"),
         ("npm", "npm uninstall -g portrm"),
     ]
     .into_iter()
     .collect();
 
+    // For "script" (install.sh) installs, suggest rm with the actual path
+    let script_cmds: Vec<String> = bins
+        .iter()
+        .filter(|b| b.source == "script")
+        .map(|b| format!("rm {}", shorten(&b.path)))
+        .collect();
+
     let cmds: Vec<&&str> = unique
         .iter()
         .filter_map(|s| uninstall.get(s))
         .collect();
 
-    if !cmds.is_empty() {
+    if !cmds.is_empty() || !script_cmds.is_empty() {
         eprintln!("  {}", "Uninstall duplicates:".bold());
         eprintln!();
         for cmd in &cmds {
+            eprintln!("    {} {}", "$".dimmed(), cmd);
+        }
+        for cmd in &script_cmds {
             eprintln!("    {} {}", "$".dimmed(), cmd);
         }
         eprintln!();

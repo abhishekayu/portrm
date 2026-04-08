@@ -48,9 +48,19 @@ _SOURCE_PATTERNS = [
     # (substrings to match in normalised path, label)
     (("homebrew", "/opt/homebrew", "Cellar", "linuxbrew"), "brew"),
     ((".cargo/bin",), "cargo"),
-    (("site-packages", ".local", "python", "Python"), "pip"),
+    (("site-packages", "python", "Python"), "pip"),
     (("node_modules", "/npm/", "/npx/", "AppData/Roaming/npm", "_npx"), "npm"),
 ]
+
+
+def _is_python_script(path: str) -> bool:
+    """Return True if the file starts with a #! shebang referencing Python."""
+    try:
+        with open(path, "rb") as f:
+            head = f.read(256).decode("utf-8", errors="ignore")
+        return head.startswith("#!") and "python" in head.lower()
+    except Exception:
+        return False
 
 
 def detect_source(path: str) -> str:
@@ -60,6 +70,18 @@ def detect_source(path: str) -> str:
         for pat in patterns:
             if pat.lower() in normalised.lower():
                 return label
+    # ~/.local can be pip, pipx, or install.sh — inspect the file
+    if ".local" in normalised:
+        if _is_python_script(path):
+            try:
+                with open(path) as f:
+                    head = f.read(256)
+                if "pipx" in head:
+                    return "pipx"
+            except Exception:
+                pass
+            return "pip"
+        return "script"
     return "unknown"
 
 
@@ -167,12 +189,13 @@ def _which_all(name: str) -> list:
 _UNINSTALL_CMD = {
     "brew": "brew uninstall portrm",
     "pip": "pip uninstall portrm",
+    "pipx": "pipx uninstall portrm",
     "cargo": "cargo uninstall portrm",
     "npm": "npm uninstall -g portrm",
 }
 
 
-def get_uninstall_commands(sources: list) -> list:
+def get_uninstall_commands(sources: list, binaries: list = None) -> list:
     """Return deduplicated uninstall commands for the given source labels."""
     seen: set = set()
     cmds: list = []
@@ -181,6 +204,16 @@ def get_uninstall_commands(sources: list) -> list:
         if cmd and cmd not in seen:
             seen.add(cmd)
             cmds.append(cmd)
+    # For "script" (install.sh) installs, suggest rm with the path
+    if binaries:
+        for path, src in zip(binaries, sources):
+            if src == "script":
+                home = os.path.expanduser("~")
+                display = path.replace(home, "~") if path.startswith(home) else path
+                cmd = f"rm {display}"
+                if cmd not in seen:
+                    seen.add(cmd)
+                    cmds.append(cmd)
     return cmds
 
 
@@ -288,7 +321,7 @@ def _print_conflict(binaries: list, sources: list, unique_sources: list) -> None
     w("\n")
 
     # Uninstall commands
-    uninstall_cmds = get_uninstall_commands(unique_sources)
+    uninstall_cmds = get_uninstall_commands(unique_sources, binaries)
     if uninstall_cmds:
         w(f"  {_bold('Uninstall duplicates:')}\n")
         w("\n")
@@ -364,7 +397,7 @@ def run_doctor() -> None:
     w(f"  {_bold('Conflict status:')}\n")
     if has_conflict:
         w(f"    {_red('✖ CONFLICT')} - multiple sources detected\n")
-        uninstall_cmds = get_uninstall_commands(unique_sources)
+        uninstall_cmds = get_uninstall_commands(unique_sources, binaries)
         if uninstall_cmds:
             w(f"\n    {_bold('Fix:')} uninstall all, then reinstall with one method:\n")
             for cmd in uninstall_cmds:
