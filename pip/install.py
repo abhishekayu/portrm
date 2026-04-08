@@ -12,7 +12,7 @@ import tempfile
 import urllib.request
 import zipfile
 
-VERSION = "2.2.1"
+VERSION = "2.2.2"
 REPO = "abhishekayu/portrm"
 
 
