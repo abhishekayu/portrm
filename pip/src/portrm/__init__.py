@@ -77,6 +77,7 @@ def _ensure_binary():
 def main():
     """Entry point that delegates to the native ptrm binary."""
     from portrm.conflict import run_conflict_check, run_doctor
+    from portrm.update import check_and_update
 
     # Handle `portrm doctor` / `ptrm doctor` at the Python level
     # so it works even when the native binary is missing or broken.
@@ -85,6 +86,9 @@ def main():
         return
 
     run_conflict_check()
+
+    # Auto-update check (once per 24h, cached)
+    check_and_update(VERSION)
 
     binary = _ensure_binary()
     try:

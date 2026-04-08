@@ -6,9 +6,9 @@ use colored::Colorize;
 
 /// A discovered binary with its source ecosystem.
 #[derive(Debug)]
-struct Installation {
-    path: PathBuf,
-    source: &'static str,
+pub(crate) struct Installation {
+    pub(crate) path: PathBuf,
+    pub(crate) source: &'static str,
 }
 
 /// Check whether a file starts with a `#!` shebang referencing Python.
@@ -23,7 +23,7 @@ fn is_python_script(path: &Path) -> bool {
 }
 
 /// Detect which package manager installed a binary based on its path.
-fn detect_source(path: &Path) -> &'static str {
+pub(crate) fn detect_source(path: &Path) -> &'static str {
     let s = path.to_string_lossy().replace('\\', "/").to_lowercase();
 
     // Order matters: more specific patterns first
@@ -58,7 +58,7 @@ fn detect_source(path: &Path) -> &'static str {
 }
 
 /// Find all `ptrm` and `portrm` binaries on PATH.
-fn find_all_binaries() -> Vec<Installation> {
+pub(crate) fn find_all_binaries() -> Vec<Installation> {
     let path_var = env::var("PATH").unwrap_or_default();
     let names: &[&str] = if cfg!(windows) {
         &["ptrm.exe", "portrm.exe"]

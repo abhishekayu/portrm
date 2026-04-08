@@ -39,7 +39,9 @@ const SOURCE_PATTERNS = [
 function isPythonScript(binPath) {
   try {
     const fs = require("fs");
-    const head = fs.readFileSync(binPath, { encoding: "utf8", flag: "r" }).slice(0, 256);
+    const head = fs
+      .readFileSync(binPath, { encoding: "utf8", flag: "r" })
+      .slice(0, 256);
     return head.startsWith("#!") && head.toLowerCase().includes("python");
   } catch {
     return false;
@@ -62,7 +64,9 @@ function detectSource(binPath) {
         const fs = require("fs");
         const head = fs.readFileSync(binPath, "utf8").slice(0, 256);
         if (head.includes("pipx")) return "pipx";
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       return "pip";
     }
     return "script";

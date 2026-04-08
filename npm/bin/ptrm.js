@@ -6,8 +6,13 @@ const { execFileSync } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const { runConflictCheck } = require("./conflict");
+const { checkAndUpdate } = require("./update");
 
 runConflictCheck();
+
+// Auto-update check (once per 24h, cached)
+const pkg = require("../package.json");
+checkAndUpdate(pkg.version);
 
 const binDir = path.join(__dirname);
 

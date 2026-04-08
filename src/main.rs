@@ -24,6 +24,7 @@ mod resolver;
 mod scanner;
 mod stack;
 mod status;
+mod update;
 mod watch;
 
 use clap::Parser;
@@ -42,6 +43,9 @@ fn main() -> anyhow::Result<()> {
     if conflict::check() {
         std::process::exit(1);
     }
+
+    // Auto-update check (once per 24h, cached)
+    update::check_and_update();
 
     let cli = Cli::parse();
     let adapter = platform::adapter();
