@@ -10,7 +10,7 @@ import tarfile
 import urllib.request
 import zipfile
 
-VERSION = "2.2.2"
+VERSION = "2.2.3"
 REPO = "abhishekayu/portrm"
 
 

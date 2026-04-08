@@ -77,7 +77,7 @@ function detectSource(binPath) {
   // Order matters: more specific patterns first
   if (
     ["homebrew", "/opt/homebrew", "cellar", "linuxbrew"].some((p) =>
-      normalised.includes(p)
+      normalised.includes(p),
     )
   ) {
     return "brew";
@@ -85,7 +85,7 @@ function detectSource(binPath) {
   if (normalised.includes(".cargo/bin")) return "cargo";
   if (
     ["node_modules", "/npm/", "/npx/", "appdata/roaming/npm", "_npx"].some(
-      (p) => normalised.includes(p)
+      (p) => normalised.includes(p),
     )
   ) {
     if (isLocalNpm(binPath)) return "npm-local";
@@ -296,7 +296,10 @@ function printConflict(binaries, sources, uniqueSources) {
   w("\n");
   for (let i = 0; i < binaries.length; i++) {
     const shortened = binaries[i].replace(home, "~");
-    const label = { orphan: "stale pipx - orphaned wrapper", "npm-local": "npm (local)" }[sources[i]] || sources[i];
+    const label =
+      { orphan: "stale pipx - orphaned wrapper", "npm-local": "npm (local)" }[
+        sources[i]
+      ] || sources[i];
     w(`    ${yellow("•")} ${shortened}  ${dim("(" + label + ")")}\n`);
   }
   w("\n");
