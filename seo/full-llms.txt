@@ -1,0 +1,356 @@
+# portrm -- Full Documentation for LLMs
+
+> Stop guessing what's running on your machine.
+
+https://portrm.dev
+
+portrm is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked.
+
+Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments - all from your terminal, in milliseconds.
+
+Built for real-world development workflows where every second counts.
+## What portrm does
+
+portrm detects what process is using a port, classifies the service (Next.js, Vite, Django, Flask, Express, PostgreSQL, Redis, Docker, etc.), assesses whether it's safe to kill, sends a graceful shutdown signal, verifies the port is free, and suggests or auto-runs the restart command.
+
+## Installation
+
+### Homebrew (macOS/Linux)
+brew tap abhishekayu/tap && brew install portrm
+
+### Cargo (Rust)
+cargo install portrm
+
+### npm
+npm install -g portrm
+
+### npx (no install)
+npx portrm scan
+
+### Shell script
+curl -fsSL https://raw.githubusercontent.com/abhishekayu/portrm/main/install.sh | sh
+
+## Commands
+
+### ptrm scan
+Lists all listening ports on the system with process name, PID, detected service type, memory usage, uptime, and user.
+
+Example:
+  ptrm scan
+
+Output shows a table of all active ports with columns: PORT, PROCESS, PID, SERVICE, MEMORY, UPTIME, USER.
+
+### ptrm <port>
+Inspects a single port. Shows detailed information about the process: service type with confidence score, memory, uptime, safety verdict, project detection, and restart command.
+
+Example:
+  ptrm 3000
+
+### ptrm fix <ports>
+The core command. Identifies the process on a port, runs safety checks, asks for confirmation, sends SIGTERM (graceful), waits for exit, verifies the port is free, and suggests a restart command. Supports multiple ports in a single invocation.
+
+Flags:
+  -y              Skip confirmation prompt
+  --run "cmd"     Auto-restart after killing
+
+Examples:
+  ptrm fix 3000
+  ptrm fix 3000 8080
+  ptrm fix 3000 -y
+  ptrm fix 3000 --run "npm run dev"
+
+### ptrm kill <ports>
+Direct kill with safety confirmation. Similar to fix but without restart suggestions. Supports multiple ports.
+
+Example:
+  ptrm kill 8080
+  ptrm kill 3000 8080 5173
+
+### ptrm group
+Groups all listening ports by role: Frontend, Backend, Database, Infrastructure.
+
+Flags:
+  --dev    Show only development-related ports
+
+Example:
+  ptrm group --dev
+
+### ptrm doctor
+Auto-diagnoses the dev environment. Finds stale dev servers, idle processes consuming resources, and port conflicts.
+
+Flags:
+  -y    Auto-fix all safe issues without prompting
+
+Examples:
+  ptrm doctor
+  ptrm doctor -y
+
+### ptrm history
+Shows past ptrm actions with timestamps, ports, PIDs, and outcomes.
+
+Flags:
+  --stats    Show statistics: success rate, most killed port, most killed process
+
+Examples:
+  ptrm history
+  ptrm history --stats
+
+### ptrm project
+Detects the project type in the current directory by reading package.json, Cargo.toml, pyproject.toml, etc. Suggests the appropriate dev command and default port.
+
+Example:
+  ptrm project
+
+### ptrm ui
+Launches an interactive terminal UI (TUI) built with ratatui. Navigate ports with arrow keys, inspect with Enter, fix with 'f'.
+
+Example:
+  ptrm ui
+
+### JSON output
+All commands support --json flag for scripting and CI integration.
+
+Example:
+  ptrm scan --json
+  ptrm doctor --json
+
+### ptrm registry check
+Validates port assignments in .ptrm.toml for conflicts. Detects duplicate ports across services and across profile overrides.
+
+Example:
+  ptrm registry check
+
+Output shows conflicts or confirms no conflicts found.
+
+### ptrm ci
+Non-interactive runner for CI/CD pipelines. Runs 4 steps in sequence: validate config, registry check, preflight, and doctor. Exits with code 1 on any failure.
+
+Flags:
+  --json    Output results as JSON
+
+Examples:
+  ptrm ci
+  ptrm ci --json
+
+### ptrm use <profile>
+Switches to a named profile defined in .ptrm.toml. The active profile is persisted to .ptrm.state and applied automatically to up, down, watch, and preflight.
+
+Examples:
+  ptrm use staging
+  ptrm use default
+
+### ptrm restart <service>
+Restarts a single named service from .ptrm.toml. Stops whatever is currently on the configured port (local process via SIGTERM/SIGKILL, or Docker container via `docker restart`), then re-runs the service's `run` command. Respects the active profile for port and env overrides.
+
+Examples:
+  ptrm restart frontend
+  ptrm restart api
+
+### ptrm status
+Shows live status of all services defined in .ptrm.toml. Scans each configured port and classifies the result as Running (expected process found), Stopped (port is free), or Conflict (unexpected process on the port). Uses heuristic matching against process name, service kind, and command string.
+
+Flags:
+  --json    Output status as JSON array
+
+Examples:
+  ptrm status
+  ptrm status --json
+
+### ptrm log <port>
+Streams live logs from the process on a port. For Docker containers, runs `docker logs -f`. For local processes, detects log files via lsof. If the process writes to a TTY, shows helpful guidance on redirecting output to a log file.
+
+Examples:
+  ptrm log 3000
+  ptrm log 8080
+
+### ptrm init
+Creates a .ptrm.toml configuration file in the current directory. Detects the project type automatically (Next.js, Vite, Django, etc.) and generates a config with the correct port and dev command.
+
+Smart detection features:
+- Reads package.json scripts for hardcoded ports (--port 3050, -p 8080, etc.)
+- In monorepos, scans subdirectories for projects and generates a multi-service config
+- Sets correct run commands and default ports per framework
+
+Example:
+  ptrm init
+
+### ptrm up
+Starts all services defined in .ptrm.toml. Runs pre-flight port checks before starting each service. If a port is already in use, the service is skipped (or auto-fixed with -y).
+
+Tracks spawned PIDs in .ptrm.pids. Detects when a framework binds a different port than configured (e.g., Next.js auto-increments when a port is taken) by comparing ports before and after spawn, and checking parent/child PID relationships.
+
+Flags:
+  -y    Auto-fix port conflicts before starting
+
+Examples:
+  ptrm up
+  ptrm up -y
+
+### ptrm down
+Stops all services defined in .ptrm.toml using a 3-tier strategy:
+1. Check the declared port for a process and kill it
+2. Check the actual port from .ptrm.pids (if the process moved to a different port)
+3. Kill by saved PID directly as a last resort
+
+Cleans up the .ptrm.pids file after stopping.
+
+Example:
+  ptrm down
+
+### ptrm preflight
+Checks if ports are free before starting services. If no ports are specified, reads ports from .ptrm.toml.
+
+Examples:
+  ptrm preflight
+  ptrm preflight 3000 8080 5432
+
+### ptrm watch <port>
+Continuously monitors a port at a configurable interval. Detects when the process goes down, reports crash reasons (signal, OOM, zombie), and auto-restarts if a run command is defined in .ptrm.toml.
+
+Flags:
+  --interval <seconds>    Poll interval (default: 2)
+
+Examples:
+  ptrm watch 3000
+  ptrm watch 8080 --interval 5
+
+### .ptrm.toml configuration
+Project config file that declares your dev stack:
+
+```toml
+[project]
+name = "my-app"
+
+[services.frontend]
+port = 3000
+run = "npm run dev"
+cwd = "./frontend"
+preflight = true
+
+[services.api]
+port = 8080
+run = "cargo run"
+cwd = "./backend"
+env = { RUST_LOG = "debug" }
+
+[profiles.staging]
+frontend = { port = 3100 }
+api = { port = 8180, env = { RUST_LOG = "info" } }
+```
+
+Each service has: port (required), run command (required), working directory, environment variables, preflight toggle, and readiness check URL.
+
+Profiles allow overriding port, run, cwd, and env per service. The active profile is stored in .ptrm.state.
+
+## Safety System
+
+ptrm never blindly kills a process. Every process goes through a three-tier safety assessment:
+
+BLOCKED: System-critical processes that ptrm refuses to kill.
+  Examples: PID 0, PID 1, launchd, systemd, sshd, kernel_task, WindowServer, loginwindow
+  30+ processes in the blocklist.
+
+WARNING: Processes where killing could cause data loss or cascading failures.
+  Examples: PostgreSQL, MySQL, Redis, MongoDB, Docker, Nginx, Apache
+  ptrm warns about consequences and requires explicit confirmation.
+
+SAFE: Dev servers and development tools that are safe to kill and restart.
+  Examples: Next.js, Vite, Create React App, Webpack Dev Server, Django runserver, Flask, Express, Nodemon, ts-node
+
+## Service Classification
+
+ptrm identifies 13+ service categories:
+- NextJs, Vite, CreateReactApp, WebpackDevServer
+- Django, Flask, Express
+- PostgreSQL, MySQL, Redis, MongoDB
+- Docker, Nginx
+- Node.js, Python (generic)
+
+Each classification includes a confidence score (0-100%).
+
+## Kill Strategy
+
+Graceful: Sends SIGTERM, waits up to 5 seconds for clean exit. Used for dev servers.
+Escalating: Sends SIGTERM, waits, then sends SIGKILL if process didn't exit. Used for stubborn processes.
+Force: Sends SIGKILL immediately. Used only when explicitly requested.
+
+## Project Detection
+
+ptrm reads the filesystem to detect project types:
+- package.json (name, scripts.dev) -> Node.js/Next.js/Vite project
+- Cargo.toml -> Rust project
+- pyproject.toml / requirements.txt -> Python project
+- docker-compose.yml -> Docker project
+- Gemfile -> Ruby project
+
+Smart port detection: reads package.json scripts for hardcoded ports (--port, -p, --port=, :PORT). If `next dev --port 3050` is in the dev script, ptrm uses 3050 instead of the default 3000.
+
+Monorepo support: when running `ptrm init` in a directory with subdirectories containing package.json, Cargo.toml, etc., ptrm generates a multi-service config with correct cwd paths.
+
+Based on detection, suggests the correct dev command (npm run dev, cargo run, python manage.py runserver, etc.)
+
+## Architecture
+
+Written in Rust (edition 2024). ~1.2MB binary. Zero runtime dependencies.
+
+Modules:
+- scanner: Batch port scanning with sysinfo process resolution
+- classifier: 13+ service classifiers with confidence scoring
+- engine: Fix engine with safety checks, strategy selection, graceful kill
+- platform: macOS (lsof + libc), Linux (/proc/net/tcp + libc), Windows (netstat + taskkill)
+- project: Filesystem project detection
+- docker: Container awareness via docker ps
+- grouping: Port role classification (frontend/backend/database/infra)
+- doctor: Auto-diagnosis of stale servers, idle processes
+- history: Action log persisted to ~/.ptrm/history.json
+- config: .ptrm.toml project config loader (monorepo, port detection from scripts)
+- watch: Continuous port monitoring with crash detection
+- stack: Dev stack orchestration (up/down with PID tracking and actual port detection)
+- preflight: Pre-flight port availability checks
+- crash: Crash reason detection (signal, OOM, zombie)
+- restart: Single-service restart (stop + start from config)
+- status: Live service status dashboard (running/stopped/conflict)
+- log: Log streaming for Docker containers and local processes
+- registry: Port conflict detection across services and profiles
+- ci: Non-interactive CI/CD runner (config + registry + preflight + doctor)
+- plugin: Extensible ServiceDetector trait
+- cli: Clap v4 + colored output + ratatui TUI
+
+## Common Use Cases
+
+1. "Port 3000 is already in use" after a crash -> ptrm fix 3000
+2. Clean up stale dev servers every morning -> ptrm doctor -y
+3. See what's running on all ports -> ptrm scan
+4. Crash-proof npm scripts -> "dev": "ptrm fix 3000 -y --run 'next dev'"
+5. Identify unknown process on a port -> ptrm 8080
+6. Fix and restart in one command -> ptrm fix 3000 --run "npm run dev"
+7. Interactive port management -> ptrm ui
+8. Start entire dev stack from config -> ptrm up
+9. Stop all dev services -> ptrm down
+10. Check ports before starting -> ptrm preflight 3000 8080
+11. Fix multiple ports at once -> ptrm fix 3000 8080 5173
+12. Init monorepo with auto port detection -> ptrm init
+13. Track actual port when framework auto-increments -> ptrm up detects and reports
+11. Monitor flaky dev server -> ptrm watch 3000
+12. Initialize project config -> ptrm init
+13. Validate port assignments for conflicts -> ptrm registry check
+14. Run all checks in CI pipeline -> ptrm ci
+15. Switch to staging profile -> ptrm use staging
+16. Restart a single service -> ptrm restart frontend
+17. Check status of all services -> ptrm status
+18. Stream logs from a port -> ptrm log 3000
+
+## Platforms
+
+- macOS (Intel and Apple Silicon)
+- Linux (x86_64 and ARM64)
+- Windows (x86_64)
+
+## Links
+
+- GitHub: https://github.com/abhishekayu/portrm
+- crates.io: https://crates.io/crates/portrm
+- npm: https://www.npmjs.com/package/portrm
+- VS Code: https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli
+- Homebrew: brew tap abhishekayu/tap && brew install portrm
+- License: MIT

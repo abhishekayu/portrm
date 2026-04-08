@@ -1,0 +1,212 @@
+{
+  "name": "portrm",
+  "tagline": "Stop guessing what's running on your machine.",
+  "description": "portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.",
+  "short_description": "portrm is a fast, cross-platform CLI to inspect ports, understand processes, and recover broken dev environments - built for real-world development workflows.",
+  "language": "Rust",
+  "license": "MIT",
+  "platforms": ["macOS", "Linux", "Windows"],
+  "architectures": ["x86_64", "arm64"],
+  "binary_size": "~1.2MB",
+  "runtime_dependencies": [],
+  "repository": "https://github.com/abhishekayu/portrm",
+  "homepage": "https://portrm.dev",
+  "packages": {
+    "crates_io": "https://crates.io/crates/portrm",
+    "npm": "https://www.npmjs.com/package/portrm",
+    "homebrew": "brew tap abhishekayu/tap && brew install portrm"
+  },
+  "install": {
+    "homebrew": "brew tap abhishekayu/tap && brew install portrm",
+    "cargo": "cargo install portrm",
+    "npm_global": "npm install -g portrm",
+    "npx": "npx portrm scan",
+    "shell": "curl -fsSL https://raw.githubusercontent.com/abhishekayu/portrm/main/install.sh | sh"
+  },
+  "commands": [
+    {
+      "name": "scan",
+      "syntax": "ptrm scan",
+      "description": "List all listening ports with process name, PID, service type, memory, uptime, and user.",
+      "flags": ["--json"]
+    },
+    {
+      "name": "info",
+      "syntax": "ptrm <port>",
+      "description": "Inspect a single port with detailed process and service information.",
+      "example": "ptrm 3000"
+    },
+    {
+      "name": "fix",
+      "syntax": "ptrm fix <port>",
+      "description": "Identify process on port, run safety checks, gracefully kill, suggest restart.",
+      "flags": ["-y", "--run \"cmd\"", "--json"],
+      "examples": [
+        "ptrm fix 3000",
+        "ptrm fix 3000 -y",
+        "ptrm fix 3000 --run \"npm run dev\""
+      ]
+    },
+    {
+      "name": "kill",
+      "syntax": "ptrm kill <port>",
+      "description": "Direct kill with safety confirmation.",
+      "example": "ptrm kill 8080"
+    },
+    {
+      "name": "group",
+      "syntax": "ptrm group",
+      "description": "Group listening ports by role: frontend, backend, database, infrastructure.",
+      "flags": ["--dev", "--json"],
+      "example": "ptrm group --dev"
+    },
+    {
+      "name": "doctor",
+      "syntax": "ptrm doctor",
+      "description": "Auto-diagnose dev environment: stale servers, idle processes, port conflicts.",
+      "flags": ["-y", "--json"],
+      "examples": ["ptrm doctor", "ptrm doctor -y"]
+    },
+    {
+      "name": "history",
+      "syntax": "ptrm history",
+      "description": "View past ptrm actions with timestamps and outcomes.",
+      "flags": ["--stats", "--json"],
+      "examples": ["ptrm history", "ptrm history --stats"]
+    },
+    {
+      "name": "project",
+      "syntax": "ptrm project",
+      "description": "Detect project type and suggest dev commands.",
+      "example": "ptrm project"
+    },
+    {
+      "name": "ui",
+      "syntax": "ptrm ui",
+      "description": "Interactive terminal UI with keyboard navigation for port management.",
+      "example": "ptrm ui"
+    },
+    {
+      "name": "init",
+      "syntax": "ptrm init",
+      "description": "Create a .ptrm.toml configuration file in the current directory.",
+      "example": "ptrm init"
+    },
+    {
+      "name": "up",
+      "syntax": "ptrm up",
+      "description": "Start all services defined in .ptrm.toml with pre-flight port checks.",
+      "flags": ["-y"],
+      "examples": ["ptrm up", "ptrm up -y"]
+    },
+    {
+      "name": "down",
+      "syntax": "ptrm down",
+      "description": "Stop all services defined in .ptrm.toml by gracefully killing processes.",
+      "example": "ptrm down"
+    },
+    {
+      "name": "preflight",
+      "syntax": "ptrm preflight [ports...]",
+      "description": "Check if ports are free before starting. Reads from .ptrm.toml if no ports given.",
+      "examples": ["ptrm preflight", "ptrm preflight 3000 8080 5432"]
+    },
+    {
+      "name": "watch",
+      "syntax": "ptrm watch <port>",
+      "description": "Monitor a port continuously. Detects crashes and auto-restarts from .ptrm.toml config.",
+      "flags": ["--interval <seconds>"],
+      "examples": ["ptrm watch 3000", "ptrm watch 8080 --interval 5"]
+    },
+    {
+      "name": "restart",
+      "syntax": "ptrm restart <service>",
+      "description": "Restart a named service from .ptrm.toml. Stops the process on the port (local or Docker), then re-runs the configured command.",
+      "examples": ["ptrm restart frontend", "ptrm restart api"]
+    },
+    {
+      "name": "status",
+      "syntax": "ptrm status",
+      "description": "Show live status of all services from .ptrm.toml. Reports Running, Stopped, or Conflict for each service.",
+      "flags": ["--json"],
+      "examples": ["ptrm status", "ptrm status --json"]
+    },
+    {
+      "name": "log",
+      "syntax": "ptrm log <port>",
+      "description": "Stream live logs from a port. Supports Docker containers and local processes with log file detection.",
+      "examples": ["ptrm log 3000", "ptrm log 8080"]
+    }
+  ],
+  "safety_system": {
+    "tiers": [
+      {
+        "level": "BLOCKED",
+        "description": "System-critical processes. ptrm refuses to kill.",
+        "examples": ["PID 0", "PID 1", "launchd", "systemd", "sshd", "kernel_task", "WindowServer"]
+      },
+      {
+        "level": "WARNING",
+        "description": "Databases and infrastructure. Warns about data loss risk.",
+        "examples": ["PostgreSQL", "MySQL", "Redis", "MongoDB", "Docker", "Nginx"]
+      },
+      {
+        "level": "SAFE",
+        "description": "Dev servers. Kills gracefully.",
+        "examples": ["Next.js", "Vite", "Create React App", "Django", "Flask", "Express"]
+      }
+    ]
+  },
+  "supported_services": [
+    "Next.js", "Vite", "Create React App", "Webpack Dev Server",
+    "Django", "Flask", "Express",
+    "PostgreSQL", "MySQL", "Redis", "MongoDB",
+    "Docker", "Nginx",
+    "Node.js", "Python"
+  ],
+  "kill_strategies": [
+    {
+      "name": "Graceful",
+      "method": "SIGTERM + wait",
+      "use_case": "Dev servers"
+    },
+    {
+      "name": "Escalating",
+      "method": "SIGTERM, wait, then SIGKILL",
+      "use_case": "Stubborn processes"
+    },
+    {
+      "name": "Force",
+      "method": "SIGKILL",
+      "use_case": "Explicit user request"
+    }
+  ],
+  "project_detection": {
+    "package.json": "Node.js / Next.js / Vite",
+    "Cargo.toml": "Rust",
+    "pyproject.toml": "Python",
+    "requirements.txt": "Python",
+    "docker-compose.yml": "Docker",
+    "Gemfile": "Ruby"
+  },
+  "keywords": [
+    "port", "kill-port", "port-conflict", "EADDRINUSE", "address-already-in-use",
+    "developer-tools", "CLI", "devserver", "process", "debug",
+    "zombie-process", "port-scanner", "dev-environment", "productivity",
+    "lsof-alternative", "fkill-alternative", "kill-port-alternative",
+    "graceful-shutdown", "process-manager", "Rust-CLI", "TUI",
+    "dev-stack", "ptrm-up", "ptrm-down", "port-monitoring",
+    "crash-detection", "auto-restart", "preflight-check", "ptrm-watch",
+    "project-config", "ptrm-toml", "service-orchestration"
+  ],
+  "comparison": {
+    "vs_kill_port": "ptrm adds safety checks, service classification, graceful shutdown, restart hints, doctor, TUI. Native binary vs Node.js.",
+    "vs_fkill": "ptrm adds safety assessment, graceful shutdown, project-aware restart, auto-diagnosis. Native binary vs Node.js.",
+    "vs_lsof_kill": "portrm is a single command that identifies, assesses safety, kills gracefully, and suggests restart. No manual PID parsing.",
+    "vs_docker_compose": "ptrm up/down manages local processes without containers. Lightweight alternative for local dev stacks."
+  },
+  "keywords_extra": [
+    "restart-service", "service-status", "log-streaming",
+    "ptrm-restart", "ptrm-status", "ptrm-log"
+  ]
+}

@@ -1,0 +1,34 @@
+# portrm
+
+> Stop guessing what's running on your machine.
+
+https://portrm.dev
+
+portrm is a blazing-fast, cross-platform CLI for developers who need to move fast and stay unblocked.
+
+Inspect active ports, understand the processes behind them, kill port conflicts, and recover broken dev environments - all from your terminal, in milliseconds.
+
+Built for real-world development workflows where every second counts.
+
+## Quick Start
+
+Install: brew install portrm, cargo install portrm, or npx portrm scan
+Fix a port: ptrm fix 3000
+Scan all ports: ptrm scan
+Auto-diagnose: ptrm doctor
+Start dev stack: ptrm init && ptrm up
+Stop dev stack: ptrm down
+Restart a service: ptrm restart frontend
+Check service status: ptrm status
+Stream logs: ptrm log 3000
+Watch a port: ptrm watch 3000
+Pre-flight check: ptrm preflight 3000 8080
+
+## Links
+
+- Docs: https://github.com/abhishekayu/portrm
+- Install: https://github.com/abhishekayu/portrm#install
+- npm: https://www.npmjs.com/package/portrm
+- crates.io: https://crates.io/crates/portrm
+- VS Code: https://marketplace.visualstudio.com/items?itemName=abhishekayu.portrm-cli
+- Issues: https://github.com/abhishekayu/portrm/issues
