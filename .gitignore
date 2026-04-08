@@ -2,5 +2,5 @@
 .ptrm.pids
 .DS_Store
 *.vsix
-test_conflict.py
-test_cross_platform.py
+# test_conflict.py
+# test_cross_platform.py
