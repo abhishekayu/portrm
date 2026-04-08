@@ -5,7 +5,7 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 set -o pipefail
 
-P="$(cd "$(dirname "$0")" && pwd)/target/release/ptrm"
+P="$(cd "$(dirname "$0")/.." && pwd)/target/release/ptrm"
 export PTRM_SKIP_CONFLICT_CHECK=1
 PASS=0
 FAIL=0

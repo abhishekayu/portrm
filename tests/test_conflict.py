@@ -22,7 +22,7 @@ import textwrap
 # ── Resolve project paths ───────────────────────────────────────────────────
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = SCRIPT_DIR  # script lives at repo root
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)  # script lives in tests/
 CONFLICT_MODULE = os.path.join(PROJECT_ROOT, "pip", "src")
 
 # Inject module path so we can import portrm.conflict directly
