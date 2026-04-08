@@ -81,7 +81,25 @@ def _is_local_npm(path: str) -> bool:
 
 
 def detect_source(path: str) -> str:
-    """Map an absolute binary path to its install ecosystem."""
+    """Map an absolute binary path to its install ecosystem.
+
+    If the raw path yields 'unknown', resolves symlinks and retries.
+    """
+    result = _detect_source_inner(path)
+    if result == "unknown":
+        try:
+            resolved = os.path.realpath(path)
+            if resolved != path:
+                retry = _detect_source_inner(resolved)
+                if retry != "unknown":
+                    return retry
+        except OSError:
+            pass
+    return result
+
+
+def _detect_source_inner(path: str) -> str:
+    """Core source detection from path patterns."""
     normalised = path.replace("\\", "/")
     lower = normalised.lower()
 

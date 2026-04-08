@@ -43,7 +43,24 @@ fn is_local_npm(path: &Path) -> bool {
 }
 
 /// Detect which package manager installed a binary based on its path.
+/// If the raw path yields "unknown", resolves symlinks and retries.
 pub(crate) fn detect_source(path: &Path) -> &'static str {
+    let result = detect_source_inner(path);
+    if result == "unknown" {
+        // Try resolving symlinks -- e.g. /usr/local/bin/portrm -> ../lib/node_modules/...
+        if let Ok(resolved) = path.canonicalize()
+            && resolved != path
+        {
+            let retry = detect_source_inner(&resolved);
+            if retry != "unknown" {
+                return retry;
+            }
+        }
+    }
+    result
+}
+
+fn detect_source_inner(path: &Path) -> &'static str {
     let s = path.to_string_lossy().replace('\\', "/").to_lowercase();
 
     // Order matters: more specific patterns first

@@ -72,6 +72,24 @@ function isLocalNpm(binPath) {
 }
 
 function detectSource(binPath) {
+  const result = _detectSourceInner(binPath);
+  if (result === "unknown") {
+    // Try resolving symlinks -- e.g. /usr/local/bin/portrm -> ../lib/node_modules/...
+    try {
+      const fs = require("fs");
+      const resolved = fs.realpathSync(binPath);
+      if (resolved !== binPath) {
+        const retry = _detectSourceInner(resolved);
+        if (retry !== "unknown") return retry;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return result;
+}
+
+function _detectSourceInner(binPath) {
   const normalised = binPath.replace(/\\/g, "/").toLowerCase();
 
   // Order matters: more specific patterns first
