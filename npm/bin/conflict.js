@@ -48,14 +48,51 @@ function isPythonScript(binPath) {
   }
 }
 
+function pipxVenvExists() {
+  const fs = require("fs");
+  const venvDir = path.join(os.homedir(), ".local", "pipx", "venvs", "portrm");
+  try {
+    return fs.statSync(venvDir).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function isLocalNpm(binPath) {
+  const normalised = binPath.replace(/\\/g, "/");
+  // Global npm paths contain /usr/local, /usr/lib, or AppData/Roaming/npm
+  if (
+    normalised.includes("/usr/local/") ||
+    normalised.includes("/usr/lib/") ||
+    normalised.toLowerCase().includes("appdata/roaming/npm")
+  ) {
+    return false;
+  }
+  return true;
+}
+
 function detectSource(binPath) {
   const normalised = binPath.replace(/\\/g, "/").toLowerCase();
-  for (const { patterns, label } of SOURCE_PATTERNS) {
-    for (const pat of patterns) {
-      if (normalised.includes(pat.toLowerCase())) {
-        return label;
-      }
-    }
+
+  // Order matters: more specific patterns first
+  if (
+    ["homebrew", "/opt/homebrew", "cellar", "linuxbrew"].some((p) =>
+      normalised.includes(p)
+    )
+  ) {
+    return "brew";
+  }
+  if (normalised.includes(".cargo/bin")) return "cargo";
+  if (
+    ["node_modules", "/npm/", "/npx/", "appdata/roaming/npm", "_npx"].some(
+      (p) => normalised.includes(p)
+    )
+  ) {
+    if (isLocalNpm(binPath)) return "npm-local";
+    return "npm";
+  }
+  if (["site-packages", "python"].some((p) => normalised.includes(p))) {
+    return "pip";
   }
   // ~/.local can be pip, pipx, or install.sh
   if (normalised.includes(".local")) {
@@ -63,7 +100,10 @@ function detectSource(binPath) {
       try {
         const fs = require("fs");
         const head = fs.readFileSync(binPath, "utf8").slice(0, 256);
-        if (head.includes("pipx")) return "pipx";
+        if (head.includes("pipx")) {
+          if (pipxVenvExists()) return "pipx";
+          return "orphan";
+        }
       } catch {
         /* ignore */
       }
@@ -137,7 +177,20 @@ function findAllBinaries() {
       resolved.set(real, p);
     }
   }
-  return Array.from(resolved.values()).sort();
+
+  // Deduplicate by (directory, source) so ptrm + portrm in the same dir
+  // from the same package manager count as one entry.
+  const seenDirs = new Set();
+  const result = [];
+  for (const p of Array.from(resolved.values()).sort()) {
+    const source = detectSource(p);
+    const dirKey = `${path.dirname(p)}|${source}`;
+    if (!seenDirs.has(dirKey)) {
+      seenDirs.add(dirKey);
+      result.push(p);
+    }
+  }
+  return result;
 }
 
 // ── Uninstall / install commands ────────────────────────────────────────────
@@ -148,6 +201,7 @@ const UNINSTALL_CMD = {
   pipx: "pipx uninstall portrm",
   cargo: "cargo uninstall portrm",
   npm: "npm uninstall -g portrm",
+  "npm-local": "npm uninstall portrm",
 };
 
 function getUninstallCommands(sources, binaries) {
@@ -160,10 +214,10 @@ function getUninstallCommands(sources, binaries) {
       cmds.push(cmd);
     }
   }
-  // For "script" (install.sh) installs, suggest rm with the path
+  // For "script" and "orphan" installs, suggest rm with the path
   if (binaries) {
     for (let i = 0; i < sources.length; i++) {
-      if (sources[i] === "script") {
+      if (sources[i] === "script" || sources[i] === "orphan") {
         const display = binaries[i].replace(os.homedir(), "~");
         const cmd = `rm ${display}`;
         if (!seen.has(cmd)) {
@@ -242,7 +296,8 @@ function printConflict(binaries, sources, uniqueSources) {
   w("\n");
   for (let i = 0; i < binaries.length; i++) {
     const shortened = binaries[i].replace(home, "~");
-    w(`    ${yellow("•")} ${shortened}  ${dim("(" + sources[i] + ")")}\n`);
+    const label = { orphan: "stale pipx - orphaned wrapper", "npm-local": "npm (local)" }[sources[i]] || sources[i];
+    w(`    ${yellow("•")} ${shortened}  ${dim("(" + label + ")")}\n`);
   }
   w("\n");
 

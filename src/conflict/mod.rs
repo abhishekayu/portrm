@@ -22,6 +22,26 @@ fn is_python_script(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
+/// Check if a pipx venv actually exists for portrm.
+fn pipx_venv_exists() -> bool {
+    if let Some(home) = dirs::home_dir() {
+        let venv = home.join(".local/pipx/venvs/portrm");
+        return venv.is_dir();
+    }
+    false
+}
+
+/// Detect whether an npm install is local (project-level) vs global.
+fn is_local_npm(path: &Path) -> bool {
+    let s = path.to_string_lossy().replace('\\', "/");
+    // Global npm paths contain /lib/node_modules, /usr/local, /usr/lib, or AppData/Roaming/npm
+    // Local npm is anything else with node_modules (e.g. ~/node_modules, ./node_modules)
+    if s.contains("/usr/local/") || s.contains("/usr/lib/") || s.to_lowercase().contains("appdata/roaming/npm") {
+        return false;
+    }
+    true
+}
+
 /// Detect which package manager installed a binary based on its path.
 pub(crate) fn detect_source(path: &Path) -> &'static str {
     let s = path.to_string_lossy().replace('\\', "/").to_lowercase();
@@ -36,28 +56,37 @@ pub(crate) fn detect_source(path: &Path) -> &'static str {
     if s.contains("node_modules") || s.contains("/npm/") || s.contains("/npx/") || s.contains("_npx")
         || s.contains("appdata/roaming/npm")
     {
+        if is_local_npm(path) {
+            return "npm-local";
+        }
         return "npm";
     }
     if s.contains("site-packages") || s.contains("python") {
         return "pip";
     }
-    // ~/.local/bin could be pip, pipx, or install.sh — inspect the file
+    // ~/.local/bin could be pip, pipx, or install.sh -- inspect the file
     if s.contains(".local") {
         if is_python_script(path) {
-            // Check if it's specifically a pipx venv
             let head = std::fs::read_to_string(path).unwrap_or_default();
             if head.contains("pipx") {
-                return "pipx";
+                // Verify the pipx venv actually exists
+                if pipx_venv_exists() {
+                    return "pipx";
+                }
+                // Orphaned pipx wrapper -- stale file
+                return "orphan";
             }
             return "pip";
         }
-        // Compiled binary in ~/.local/bin → from install.sh
         return "script";
     }
     "unknown"
 }
 
-/// Find all `ptrm` and `portrm` binaries on PATH.
+/// Find all `ptrm` and `portrm` binaries on PATH, deduplicated by directory+source.
+///
+/// If both `ptrm` and `portrm` exist in the same directory, only the first one
+/// found is kept (avoids showing two entries for the same pip/npm install).
 pub(crate) fn find_all_binaries() -> Vec<Installation> {
     let path_var = env::var("PATH").unwrap_or_default();
     let names: &[&str] = if cfg!(windows) {
@@ -66,7 +95,8 @@ pub(crate) fn find_all_binaries() -> Vec<Installation> {
         &["ptrm", "portrm"]
     };
 
-    let mut seen = std::collections::HashSet::new();
+    let mut seen_real = std::collections::HashSet::new();
+    let mut seen_dirs = std::collections::HashSet::new();
     let mut found = Vec::new();
 
     for dir in env::split_paths(&path_var) {
@@ -75,13 +105,24 @@ pub(crate) fn find_all_binaries() -> Vec<Installation> {
             if candidate.is_file() {
                 // Resolve symlinks for dedup
                 let real = candidate.canonicalize().unwrap_or_else(|_| candidate.clone());
-                if seen.insert(real) {
-                    let source = detect_source(&candidate);
-                    found.push(Installation {
-                        path: candidate,
-                        source,
-                    });
+                if !seen_real.insert(real) {
+                    continue;
                 }
+
+                let source = detect_source(&candidate);
+
+                // Dedup by (directory, source): if we already have an entry from
+                // the same dir with the same source, skip (e.g. ptrm + portrm
+                // both in ~/Library/Python/3.9/bin from pip).
+                let dir_key = (dir.clone(), source);
+                if !seen_dirs.insert(dir_key) {
+                    continue;
+                }
+
+                found.push(Installation {
+                    path: candidate,
+                    source,
+                });
             }
         }
     }
@@ -144,11 +185,16 @@ pub fn check() -> bool {
     eprintln!("  {}", "Found:".bold());
     eprintln!();
     for bin in &bins {
+        let label = match bin.source {
+            "orphan" => "stale pipx - orphaned wrapper",
+            "npm-local" => "npm (local)",
+            other => other,
+        };
         eprintln!(
             "    {} {}  {}",
             "\u{2022}".yellow(),
             shorten(&bin.path),
-            format!("({})", bin.source).dimmed()
+            format!("({})", label).dimmed()
         );
     }
     eprintln!();
@@ -160,14 +206,15 @@ pub fn check() -> bool {
         ("pipx", "pipx uninstall portrm"),
         ("cargo", "cargo uninstall portrm"),
         ("npm", "npm uninstall -g portrm"),
+        ("npm-local", "npm uninstall portrm"),
     ]
     .into_iter()
     .collect();
 
-    // For "script" (install.sh) installs, suggest rm with the actual path
-    let script_cmds: Vec<String> = bins
+    // For "script" and "orphan" installs, suggest rm with the actual path
+    let rm_cmds: Vec<String> = bins
         .iter()
-        .filter(|b| b.source == "script")
+        .filter(|b| b.source == "script" || b.source == "orphan")
         .map(|b| format!("rm {}", shorten(&b.path)))
         .collect();
 
@@ -176,13 +223,13 @@ pub fn check() -> bool {
         .filter_map(|s| uninstall.get(s))
         .collect();
 
-    if !cmds.is_empty() || !script_cmds.is_empty() {
+    if !cmds.is_empty() || !rm_cmds.is_empty() {
         eprintln!("  {}", "Uninstall duplicates:".bold());
         eprintln!();
         for cmd in &cmds {
             eprintln!("    {} {}", "$".dimmed(), cmd);
         }
-        for cmd in &script_cmds {
+        for cmd in &rm_cmds {
             eprintln!("    {} {}", "$".dimmed(), cmd);
         }
         eprintln!();

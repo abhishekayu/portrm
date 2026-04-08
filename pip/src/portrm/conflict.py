@@ -63,21 +63,49 @@ def _is_python_script(path: str) -> bool:
         return False
 
 
+def _pipx_venv_exists() -> bool:
+    """Check if the pipx venv for portrm actually exists."""
+    home = os.path.expanduser("~")
+    return os.path.isdir(os.path.join(home, ".local", "pipx", "venvs", "portrm"))
+
+
+def _is_local_npm(path: str) -> bool:
+    """Detect whether an npm install is local (project-level) vs global."""
+    normalised = path.replace("\\", "/")
+    # Global npm paths contain /usr/local, /usr/lib, or AppData/Roaming/npm
+    if "/usr/local/" in normalised or "/usr/lib/" in normalised:
+        return False
+    if "appdata/roaming/npm" in normalised.lower():
+        return False
+    return True
+
+
 def detect_source(path: str) -> str:
     """Map an absolute binary path to its install ecosystem."""
     normalised = path.replace("\\", "/")
-    for patterns, label in _SOURCE_PATTERNS:
-        for pat in patterns:
-            if pat.lower() in normalised.lower():
-                return label
-    # ~/.local can be pip, pipx, or install.sh — inspect the file
+    lower = normalised.lower()
+
+    # Order matters: more specific patterns first
+    if any(p in lower for p in ("homebrew", "/opt/homebrew", "cellar", "linuxbrew")):
+        return "brew"
+    if ".cargo/bin" in lower:
+        return "cargo"
+    if any(p in lower for p in ("node_modules", "/npm/", "/npx/", "appdata/roaming/npm", "_npx")):
+        if _is_local_npm(path):
+            return "npm-local"
+        return "npm"
+    if any(p in lower for p in ("site-packages", "python")):
+        return "pip"
+    # ~/.local can be pip, pipx, or install.sh -- inspect the file
     if ".local" in normalised:
         if _is_python_script(path):
             try:
                 with open(path) as f:
                     head = f.read(256)
                 if "pipx" in head:
-                    return "pipx"
+                    if _pipx_venv_exists():
+                        return "pipx"
+                    return "orphan"
             except Exception:
                 pass
             return "pip"
@@ -123,7 +151,9 @@ def find_all_binaries() -> list:
     """
     Find every `portrm` and `ptrm` binary visible in PATH.
 
-    Returns a deduplicated list of absolute paths.
+    Returns a deduplicated list of absolute paths.  Binaries from the same
+    directory with the same source (e.g. ptrm + portrm from the same pip
+    install) are collapsed into a single entry.
     """
     names = ["portrm", "ptrm"]
     found: set = set()
@@ -140,7 +170,18 @@ def find_all_binaries() -> list:
             real = p
         resolved[real] = p  # keep original for display
 
-    return sorted(resolved.values())
+    # Deduplicate by (directory, source) so ptrm + portrm in the same dir
+    # from the same package manager count as one entry.
+    seen_dirs: set = set()
+    result: list = []
+    for p in sorted(resolved.values()):
+        source = detect_source(p)
+        dir_key = (os.path.dirname(p), source)
+        if dir_key not in seen_dirs:
+            seen_dirs.add(dir_key)
+            result.append(p)
+
+    return result
 
 
 def _which_all(name: str) -> list:
@@ -192,6 +233,7 @@ _UNINSTALL_CMD = {
     "pipx": "pipx uninstall portrm",
     "cargo": "cargo uninstall portrm",
     "npm": "npm uninstall -g portrm",
+    "npm-local": "npm uninstall portrm",
 }
 
 
@@ -204,10 +246,10 @@ def get_uninstall_commands(sources: list, binaries: list = None) -> list:
         if cmd and cmd not in seen:
             seen.add(cmd)
             cmds.append(cmd)
-    # For "script" (install.sh) installs, suggest rm with the path
+    # For "script" and "orphan" installs, suggest rm with the path
     if binaries:
         for path, src in zip(binaries, sources):
-            if src == "script":
+            if src in ("script", "orphan"):
                 home = os.path.expanduser("~")
                 display = path.replace(home, "~") if path.startswith(home) else path
                 cmd = f"rm {display}"
@@ -317,7 +359,8 @@ def _print_conflict(binaries: list, sources: list, unique_sources: list) -> None
     w("\n")
     for binary, src in zip(binaries, sources):
         shortened = binary.replace(os.path.expanduser("~"), "~")
-        w(f"    {_yellow('•')} {shortened}  {_dim('(' + src + ')')}\n")
+        label = {"orphan": "stale pipx - orphaned wrapper", "npm-local": "npm (local)"}.get(src, src)
+        w(f"    {_yellow('•')} {shortened}  {_dim('(' + label + ')')}\n")
     w("\n")
 
     # Uninstall commands

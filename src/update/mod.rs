@@ -84,10 +84,11 @@ fn update_command(source: &str) -> Option<&'static str> {
         "cargo" => Some("cargo install portrm"),
         "pip" => Some("pip install --upgrade portrm"),
         "pipx" => Some("pipx upgrade portrm"),
-        "npm" => Some("npm update -g portrm"),
+        "npm" | "npm-local" => Some("npm update -g portrm"),
         "script" => Some(
             "curl -fsSL https://raw.githubusercontent.com/abhishekayu/portrm/main/install.sh | sh",
         ),
+        // orphan: stale file, nothing to update
         _ => None,
     }
 }
