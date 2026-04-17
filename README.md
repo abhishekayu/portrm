@@ -141,6 +141,38 @@ cargo install --path .
 
 ---
 
+## Shell Completions
+
+Enable tab-completion for all `ptrm` commands, flags, and active port numbers.
+
+### bash
+
+Add to `~/.bashrc`:
+
+```bash
+eval "$(ptrm completions bash)"
+```
+
+### zsh
+
+Add to `~/.zshrc`:
+
+```zsh
+eval "$(ptrm completions zsh)"
+```
+
+### fish
+
+Add to `~/.config/fish/config.fish`:
+
+```fish
+ptrm completions fish | source
+```
+
+> After adding the line, restart your shell (or run `source ~/.zshrc` / `source ~/.bashrc`) for completions to take effect.
+
+---
+
 ## Usage Examples
 
 ### Scan all listening ports
@@ -427,6 +459,7 @@ Streams live logs from the process on a port. Works with Docker containers (`doc
 | `ptrm restart <service>` | Restart a named service from `.ptrm.toml`             | `ptrm restart frontend`             |
 | `ptrm status`            | Show live status of all services from config          | `ptrm status`                       |
 | `ptrm log <port>`        | Stream live logs from a port (Docker or local)        | `ptrm log 3000`                     |
+| `ptrm completions <shell>` | Generate shell completion script (bash, zsh, fish)  | `ptrm completions zsh`              |
 
 > All commands support `--json` for scripting and CI pipelines.
 
